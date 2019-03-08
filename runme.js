@@ -22,7 +22,8 @@ var mimeTypes = {
   "jpg": "image/jpeg",
   "png": "image/png", 
   "js": "text/javascript",
-  "css": "text/css"
+  "css": "text/css",
+  "json": "application/json",
 };
 
 console.log("Starting...");

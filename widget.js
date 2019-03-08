@@ -465,10 +465,23 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             this.drawGrid();
             // this.drawExtentsLabels();
             this.drawAxes();
-            // this.viewExtents();
             this.setDetails("Robot Arm Loaded");
 
-            var loader = new THREE.ObjectLoader();
+            var loader = new THREE.FileLoader();
+            var that = this;
+			loader.load( 'scene.json', function ( text ) {
+
+                var json = JSON.parse(text);
+                console.log("json:", json);
+                var loader = new THREE.ObjectLoader();
+                var sceneRobot = loader.parse( json );
+                that.object = sceneRobot;
+                that.scene.add(that.object);
+                // that.sceneAdd(sceneRobot);
+                console.log("sceneRobot:", sceneRobot);
+                that.viewExtents();
+
+			} );
              
             this.wakeAnimate();
         },
@@ -614,6 +627,7 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             var ud = this.object.userData;
             // ud.bbox2 = helper.box;
             ud.bbox2 = box3;
+            ud.center2 = {};
             
             ud.center2.x = minx + ((maxx - minx) / 2);
             ud.center2.y = miny + ((maxy - miny) / 2);
@@ -3101,7 +3115,7 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
 });
 
 function loadTrackballControls() {
-}
+
     THREE.TrackballControls = function ( object, domElement ) {
 
         var _this = this;
@@ -3714,7 +3728,7 @@ function loadTrackballControls() {
     
     THREE.TrackballControls.prototype = Object.create( THREE.EventDispatcher.prototype );
     THREE.TrackballControls.prototype.constructor = THREE.TrackballControls;
-// }
+}
 
 var WEBGL = {
 
