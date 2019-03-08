@@ -2,6 +2,7 @@
 // Defining the globals above helps Cloud9 not show warnings for those variables
 
 // ChiliPeppr Widget/Element Javascript
+var THREE = {TrackballControls: {}};
 
 requirejs.config({
     paths: {
@@ -9,16 +10,16 @@ requirejs.config({
         // Keep in mind that the /slingshot url does the same as /geturl but it is not cached
         // Three: '//i2dcui.appspot.com/slingshot?url=http://threejs.org/build/three.min.js',
         // Three: '//i2dcui.appspot.com/geturl?url=http://threejs.org/build/three.js',
-        Three: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r76/three',
+        Three: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/102/three',
         ThreeTextGeometry: '//i2dcui.appspot.com/js/three/TextGeometry',
         ThreeFontUtils: '//i2dcui.appspot.com/js/three/FontUtils',
-        ThreeDetector: '//i2dcui.appspot.com/geturl?url=http://threejs.org/examples/js/Detector.js',
+        ThreeDetector: '//i2dcui.appspot.com/geturl?url=https://threejs.org/examples/js/WebGL.js',
         //ThreeTrackballControls: '//i2dcui.appspot.com/geturl?url=http://threejs.org/examples/js/controls/TrackballControls.js',
         // Latest release
         // ThreeTrackballControls: '//i2dcui.appspot.com/slingshot?url=http://threejs.org/examples/js/controls/TrackballControls.js',
         // r79 (to solve that mousewheel zoom started not working in r80, so had to force to older version. eventually they'll fix the bug cuz i filed it)
         // ThreeTrackballControls: '//i2dcui.appspot.com/slingshot?url=http://rawgit.com/mrdoob/three.js/r79/examples/js/controls/TrackballControls.js',
-        ThreeTrackballControls: '//i2dcui.appspot.com/geturl?url=http://rawgit.com/mrdoob/three.js/r79/examples/js/controls/TrackballControls.js',
+        ThreeTrackballControls: '//i2dcui.appspot.com/geturl?url=https://rawgit.com/mrdoob/three.js/r102/examples/js/controls/TrackballControls.js',
         ThreeOrbitControls: '//threejs.org/examples/js/controls/OrbitControls',
         ThreeHelvetiker: '//i2dcui.appspot.com/js/three/threehelvetiker',
         ThreeTypeface: 'https://superi.googlecode.com/svn-history/r1953/trunk/MBrand/MBrand/Scripts/typeface-0.15',
@@ -33,123 +34,54 @@ requirejs.config({
         ThreeHelvetiker: ['Three', 'ThreeTextGeometry', 'ThreeFontUtils'],
         //ThreeHelvetiker: ['Three', 'ThreeTextGeometry'],
         ThreeTrackballControls: ['Three'],
-        ThreeTween: ['Three'],
-        ThreeSparks: ['Three'],
-        ThreeParticle: ['Three'],
-        ThreeBufferGeometryUtils: ['Three'],
-        ThreeCanvasRenderer: ['Three', 'ThreeProjector'],
-        ThreeProjector: ['Three']
+        // ThreeDetector: ['Three'],
+        // ThreeTween: ['Three'],
+        // ThreeSparks: ['Three'],
+        // ThreeParticle: ['Three'],
+        // ThreeBufferGeometryUtils: ['Three'],
+        // ThreeCanvasRenderer: ['Three', 'ThreeProjector'],
+        // ThreeProjector: ['Three']
     }
 });
 
-cprequire_test(['inline:com-chilipeppr-widget-3dviewer'], function (threed) {
+cprequire_test(['inline:com-chilipeppr-widget-3dview-robot'], function (mywidget) {
 
     // Test this element. This code is auto-removed by the chilipeppr.load()
     // when using this widget in production. So use the cpquire_test to do things
     // you only want to have happen during testing, like loading other widgets or
     // doing unit tests. Don't remove end_test at the end or auto-remove will fail.
 
-    console.log("Running 3dviewer");
+    console.log("Running 3dview-robot");
     
     // set my title while in test mode so it's pretty
-    $('title').html(threed.name);
+    $('title').html(mywidget.name);
     
     // actually finally init me
-    threed.init({doMyOwnDragDrop: true});
+    mywidget.init({doMyOwnDragDrop: true});
     
-    // test resize signal
-    setTimeout(function() {
-            chilipeppr.publish('/' + threed.id + '/resize', "" );
-    }, 3000);
-    //dragdrop
-    $('body').prepend('<div id="test-drag-drop"></div>');
-    chilipeppr.load("#test-drag-drop", 
-    // "http://fiddle.jshell.net/chilipeppr/Z9F6G/show/light/",
-    "http://raw.githubusercontent.com/chilipeppr/elem-dragdrop/master/auto-generated-widget.html",
-    function () {
-        cprequire(
-        ["inline:com-chilipeppr-elem-dragdrop"],
-
-        function (dd) {
-            dd.init();
-            dd.bind("body", null);
-        });
-    });
-    
-    // flashmsg
-    $('body').prepend('<div id="com-chilipeppr-flash"></div>');
-    chilipeppr.load("#com-chilipeppr-flash",
-        "http://raw.githubusercontent.com/chilipeppr/element-flash/master/auto-generated-widget.html",
-        // "http://fiddle.jshell.net/chilipeppr/90698kax/show/light/",
-
-    function () {
-        console.log("mycallback got called after loading flash msg module");
-        cprequire(["inline:com-chilipeppr-elem-flashmsg"], function (fm) {
-            //console.log("inside require of " + fm.id);
-            fm.init();
-        });
-    });
-    
-    var testGotoline = function() {
-        // send sample gcodeline commands as if the gcode sender widget were sending them
-        setTimeout(function() {
-            chilipeppr.publish('/com-chilipeppr-widget-3dviewer/gotoline', {line: 3, gcode: "G21 G90 G64 G40"} );
-        }, 3000);
-        setTimeout(function() {
-            chilipeppr.publish('/com-chilipeppr-widget-3dviewer/gotoline', {line: 4, gcode: "G0 Z3.0"}  );
-        }, 6000);
-        setTimeout(function() {
-            chilipeppr.publish('/com-chilipeppr-widget-3dviewer/gotoline', {line: 10, gcode: "G0 X130.8865 Y-11.5919"} );
-        }, 9000);
-        setTimeout(function() {
-            chilipeppr.publish('/com-chilipeppr-widget-3dviewer/gotoline', {line: 11, gcode: "G0 Z1.5"} );
-        }, 12000);
-        setTimeout(function() {
-            chilipeppr.publish('/com-chilipeppr-widget-3dviewer/gotoline', {line: 22, gcode: "G1 F300.0 Z0.0"}  );
-        }, 12800);
-    }
-    
-    var testGotoXyz = function() {
-        // send sample gcodeline commands as if the gcode sender widget were sending them
-        setTimeout(function() {
-            chilipeppr.publish('/com-chilipeppr-interface-cnccontroller/axes', {x:0.0, y:0.0, z:10.0} );
-        }, 3000);
-        setTimeout(function() {
-            chilipeppr.publish('/com-chilipeppr-interface-cnccontroller/axes', {z:-2.0} );
-        }, 4000);
-        setTimeout(function() {
-            chilipeppr.publish('/com-chilipeppr-interface-cnccontroller/axes', {x:0.0, z:6.0} );
-        }, 55000);
-
-    }
-    
-    var testClear = function() {
-        setTimeout(function() {
-            chilipeppr.publish('/com-chilipeppr-widget-3dviewer/sceneclear' );
-        }, 5000);
-    }
-    //testClear();
-    
-    var testViewExtents = function() {
-        setTimeout(function() {
-            chilipeppr.publish('/com-chilipeppr-widget-3dviewer/viewextents' );
-        }, 5000);
-    }
-    //testViewExtents();
-    
-    //testGotoXyz();
-    
-    //threed.init();
-    console.log("3d viewer initted");
+    console.log("3d viewer robot initted");
 } /*end_test*/ );
 
-cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 'ThreeDetector', 'ThreeTrackballControls', 'ThreeTween', 'ThreeHelvetiker', 'ThreeBufferGeometryUtils'], function () {
+
+cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Three'], function (cp, Three) {
+    
+    // console.log("global:", global);
+    // var tmpThree = THREE;
+    if (Three === undefined) Three = {EventDispatcher:function(){}};
+    THREE = Three;
+
+    console.log("THREE:", THREE);
+
+    loadTrackballControls();
+    // console.log("THREE.TrackballControls:", THREE.TrackballControls);
+    // console.log("WEBGL:", WEBGL);
 
     return {
 
-        id: 'com-chilipeppr-widget-3dviewer',
-        name: "Widget / 3D GCode Viewer",
-        desc: "Visualize your GCode in 3D by simulating your GCode run or seeing where your run is at in 3D while your CNC operation is in action.",
+
+        id: 'com-chilipeppr-widget-3dview-robot',
+        name: "Widget / 3D Robot Viewer",
+        desc: "Visualize your robot arm in 3D.",
         url: "(auto fill by runme.js)",       // The final URL of the working widget as a single HTML file with CSS and Javascript inlined. You can let runme.js auto fill this if you are using Cloud9.
         fiddleurl: "(auto fill by runme.js)", // The edit URL. This can be auto-filled by runme.js in Cloud9 if you'd like, or just define it on your own to help people know where they can edit/fork your widget
         githuburl: "(auto fill by runme.js)", // The backing github repo
@@ -196,25 +128,6 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
         init: function (initOptions) {
             this.initOptions = initOptions;
             var that = this;
-            /*
-            if (!Modernizr.webgl) {
-                alert('Sorry, you need a WebGL capable browser to use this.\n\nGet the latest Chrome or FireFox.');
-                return;
-            }
-
-            if (!Modernizr.localstorage) {
-                alert("Man, your browser is ancient. I can't work with this. Please upgrade.");
-                return;
-            }
-            */
-
-            // Show 'About' dialog for first time visits.
-            /*
-            if (!localStorage.getItem("not-first-visit")) {
-                localStorage.setItem("not-first-visit", true);
-                setTimeout(about, 500);
-            }
-            */
 
             // Drop files from desktop onto main page to import them.
             // We also can subscribe to the main chilipeppr drag/drop
@@ -248,7 +161,10 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
                 });
             }
             
-            that.scene = that.createScene($('#com-chilipeppr-widget-3dviewer-renderArea'));
+            that.scene = that.createScene($('#com-chilipeppr-widget-3dview-robot-renderArea'));
+            // that.openGCodeFromText("G0 X1\nG1 X2");
+
+            /*
             var lastImported = localStorage.getItem('last-imported');
             var lastLoaded = localStorage.getItem('last-loaded');
             if (lastImported) {
@@ -259,6 +175,7 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
                 console.log("loading chilipeppr logo");
                 that.openGCodeFromPath(lastLoaded || 'http://www.chilipeppr.com/3d/chilipepprlogo.nc');
             }
+            */
             
             var lastFpsRate = localStorage.getItem ('fpsRate');
             if (lastFpsRate) {
@@ -267,8 +184,8 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
                 var fr = parseInt(lastFpsRate);
                 this.setFrameRate(fr);
                 // set css to show selected
-                $('.com-chilipeppr-widget-3dviewer-settings-fr').removeClass('alert-info');
-                $('.com-chilipeppr-widget-3dviewer-settings-fr-' + fr).addClass('alert-info');
+                $('.com-chilipeppr-widget-3dview-robot-settings-fr').removeClass('alert-info');
+                $('.com-chilipeppr-widget-3dview-robot-settings-fr-' + fr).addClass('alert-info');
             }
 
             // setup toolbar buttons
@@ -298,13 +215,15 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             
             this.setupCogMenu();
             this.setupFpsMenu();
-            this.initJog(); //this.setupJog();
-            this.initInspect();
+            // this.initJog(); //this.setupJog();
+            // this.initInspect();
             
+            that.openRobot();
+
             // hide the pan/zoom/orbit msg after 1 minute
             setTimeout(function() {
                 console.log("hiding pan/zoom/orbit msg");
-                $('.com-chilipeppr-widget-3dviewer-panzoom-indicator').fadeOut("slow"); //addClass("hidden");
+                $('.com-chilipeppr-widget-3dview-robot-panzoom-indicator').fadeOut("slow"); //addClass("hidden");
             }, 60 * 1000);
             
         },
@@ -340,649 +259,9 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
                 }
             }
         },
-        // INSPECT CODE REGION
-        isInspectSelect: false,
-        initInspect: function() {
-            // attach click event
-            console.log("doing one time run of initial inspect setup. this should not run more than once!!!");
-            $('.com-chilipeppr-widget-3d-menu-inspect').click(this.toggleInspect.bind(this));
-                
-            // attach shortcut key
-            var el = $('#com-chilipeppr-widget-3dviewer-renderArea');
-            el.focus();
-            $(document).keydown(this.inspectKeyDown.bind(this));
-            $(document).keyup(this.inspectKeyUp.bind(this));
-            
-            this.inspectLastDecorateGroup = new THREE.Group();
-            this.sceneAdd(this.inspectLastDecorateGroup);
-            
-            // get dialog element
-            this.inspectDlgEl = $('.com-chilipeppr-widget-3dviewer-inspect');
-            // setup click event
-            this.inspectDlgEl.find('.inspect-btn-goto').click(this.onInspectGoto.bind(this));
-            this.inspectDlgEl.find('.close').click(function() {
-                $('.com-chilipeppr-widget-3dviewer-inspect').addClass("hidden");
-            });
-            
-            // create three.js group to hold all preview lines
-            this.inspectPreviewGroup = new THREE.Group();
-            
-            
-        },
-        setupInspect: function(evt) {
-            
-            console.log("setupInspect.");
-            if (this.isInspectSelect) {
-                console.log("we are already in inspect mode. being asked to setup, but returning cuz u can't setup more than once.");
-                return;
-            }
-            
-            // start watching mouse
-            var el = $(this.renderer.domElement);
-            el.mousemove(this.inspectMouseMove.bind(this));
-            el.click(this.inspectMouseClick.bind(this));
-            $('.com-chilipeppr-widget-3d-menu-inspect').addClass("active");
-            $('.com-chilipeppr-widget-3d-menu-inspect').addClass("btn-primary");
-            // make sure animation stays on
-            //this.gotoXyz({x:0,y:0,z:3});
-            if (this.inspectArrowGrp != null) {
-                this.sceneAdd(this.inspectArrowGrp);
-                //this.inspectArrowGrp.visible = true;
-            }
-            
-            this.sceneAdd(this.inspectPreviewGroup);
-            
-            this.isInspectSelect = true;
-        },
-        unsetupInspect: function() {
-            console.log("unsetupInspect");
-            if (!this.isInspectSelect) {
-                console.log("we are being asked to unsetup inspect, but it is not running so why are we getting called?");
-                return;
-            }
-            
-            var el = $(this.renderer.domElement);
-            el.unbind("mousemove");
-            el.unbind("click");
-            $('.com-chilipeppr-widget-3d-menu-inspect').removeClass("active");
-            $('.com-chilipeppr-widget-3d-menu-inspect').removeClass("btn-primary");
-            //this.unsetupJogRaycaster();
-            if (this.inspectArrowGrp != null) {
-                this.sceneRemove(this.inspectArrowGrp);
-                //this.inspectArrowGrp.visible = false;
-            }
-            this.sceneRemove(this.inspectPreviewGroup);
-            this.isInspectSelect = false;
-        },
-        toggleInspect: function(evt) {
-            if ($('.com-chilipeppr-widget-3d-menu-inspect').hasClass("active")) {
-                // turn off
-                this.unsetupInspect(evt);
-            } else {
-                this.setupInspect(evt);
-            }
-        },
-        inspectKeyDown: function(evt) {
-            if ((evt.shiftKey)  && !this.isInspectSelect) {
-                this.wakeAnimate();
-                this.setupInspect(evt);
-            }
-        },
-        inspectKeyUp: function(evt) {
-            if ((evt.keyCode == 16) && this.isInspectSelect) {
-                this.unsetupInspect(evt);
-            }
-        },
-        inspectMouseClick: function(evt) {
-            console.log("inspectMouseClick. evt:", evt);
-            return;
-            if (evt.ctrlKey || evt.altKey) {
-                if (this.jogCurPos != null) {
-                    var pt = this.jogCurPos;
-                    var gcode = "G90 G0 X" + pt.x.toFixed(3) + " Y" + pt.y.toFixed(3);
-                    gcode += "\n";
-                    chilipeppr.publish("/com-chilipeppr-widget-serialport/send", gcode);
-                } else {
-                    console.warn("this.jogCurPos should not be null");
-                }
-            }
-        },
-        onInspectGoto: function(evt) {
-            if (this.inspectLastObj.uuid != "") {
-                var lineNum = this.inspectLastObj.userData.args.indx + 1;
-                chilipeppr.publish("/com-chilipeppr-widget-gcode/jumpToLine", lineNum);
-            }
-        },
-        inspectArrowGrp: null,
-        createInspectArrow: function() {
-            
-            if (this.inspectArrowGrp != null) return;
-            
-            // build pointer line
-            this.inspectArrowGrp = new THREE.Group();
-            
-            // draw dotted lines from jog tip and shadow
-            var lineMat = new THREE.LineDashedMaterial( { color: 0xff0000, dashSize: this.getUnitVal(1),  gapSize: this.getUnitVal(1), transparent: true, opacity: 0.5 } );
-            var lineGeo = new THREE.Geometry();
-            lineGeo.vertices.push(new THREE.Vector3( 0, 0, this.getUnitVal(-100) ));
-            lineGeo.vertices.push(new THREE.Vector3( 0, 0, this.getUnitVal(100) ));
-            var line = new THREE.Line(lineGeo, lineMat); //, THREE.LineStrip);
-            this.inspectArrowLine = line;
-            this.inspectArrowGrp.add(line);
-
-            this.sceneAdd(this.inspectArrowGrp);
-            console.log("just added inspectArrowGrp:", this.inspectArrowGrp);
-
-        },
-        inspectCurPos: null,
-        inspectLastObj: {uuid:""},
-        inspectLastDecorateGroup: null,
-        inspectDlgEl: null,
-        inspectMouseMove: function(evt) {
-            
-            //event.preventDefault();
-            if (!this.isInspectSelect) {
-                return;
-            }
-            
-            this.createInspectArrow();
-            
-            this.wakeAnimate();
-            
-            console.log("inspectMouseMove. evt:", evt);
-            
-            var mouse = {};
-            mouse.x = ( evt.clientX / window.innerWidth ) * 2 - 1;
-            mouse.y = - ( evt.clientY / window.innerHeight ) * 2 + 1;
-            
-            var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 ).unproject( this.camera );
-            
-            var origin = this.camera.position.clone();
-            var dir = vector.sub( this.camera.position ).normalize();
-            
-            // set where arrow is pointing
-            //this.inspectArrowGrp.position.set(origin.x, origin.y, 0);
-            
-            var raycaster = new THREE.Raycaster( origin, dir );
-            raycaster.linePrecision = 0.2;
-            //console.log("mouse:", mouse, "raycaster:", raycaster);
-            //console.log("inspecting object.children", this.object.children);
-            //var io = raycaster.intersectObjects(this.object.children, true);
-            var io = raycaster.intersectObjects(this.object.userData.threeObjs.children, true);
-            //console.log("io:", io);
-            
-            if (io.length > 0) {
-                // we hit some objects
-                var obj = io[0];
-                //console.log("obj:", obj);
-                
-                // see if this is a new object we haven't hit yet
-                if (this.inspectLastObj.uuid != obj.object.uuid) {
-                    
-                    var o = obj.object;
-                    var ud = o.userData;
-                    
-                    console.log("hit new object:", o);
-
-                    //this.inspectLastOpacity = o.material.opacity;
-                    
-                    // reset last object
-                    //console.log("testing for reset last object. this.inspectLastObj:", this.inspectLastObj);
-                    
-                    // remove all previous preview items
-                    this.inspectPreviewGroup.children.forEach(function(threeObj) {
-                        this.inspectPreviewGroup.remove(threeObj);
-                    }, this);
-                    
-                    if (this.inspectLastObj.uuid != "") {
-                        //this.inspectPreviewGroup(
-                        //this.sceneRemove(this.inspectLastObj);
-                        //this.inspectLastObj.material.opacity = this.inspectLastOpacity;
-                        //this.inspectLastObj.material.color = 0x0000ff;
-                    }
-                    
-                    // set the current object to new opacity
-                    //o.material.opacity = 1.0;
-                    //o.material.color = 0xff0000;
-                    //this.sceneAdd(o);
-                    // create glow
-                    var glow = this.createGlow(o);
-                    this.inspectPreviewGroup.add(glow);
-                    
-                    // show dialog
-                    var x = event.clientX;
-                    var y = event.clientY;
-                    x += 30; // slide right to clear mouse
-                    y += -140;
-                    this.inspectDlgEl.css('left', x + "px").css('top', y + "px");
-                    this.inspectDlgEl.find('.inspect-line').text(ud.args.indx + 1);
-                    this.inspectDlgEl.find('.inspect-gcode').text(ud.args.origtext);
-                    this.inspectDlgEl.find('.inspect-end').text("X:" + ud.p2.x + ", Y:" + ud.p2.y + ", Z:" + ud.p2.z);
-                    this.inspectDlgEl.find('.inspect-feedrate').text(ud.p2.feedrate);
-                    this.inspectDlgEl.find('.inspect-distance').text(ud.p2.dist.toFixed(3));
-                    this.inspectDlgEl.find('.inspect-time').text((ud.p2.timeMins * 60).toFixed(2) + "s");
-                    var pretty = this.convertMinsToPrettyDuration(ud.p2.timeMinsSum);
-                    this.inspectDlgEl.find('.inspect-timeSum').text(pretty);
-                    this.inspectDlgEl.removeClass("hidden");
-                    
-                    // set the last object to this one
-                    this.inspectLastObj = o;
-                    
-                    // remove any previous
-                    /*
-                    var that = this;
-                    this.inspectLastDecorateGroup.traverse(function(o) {
-                        that.inspectLastDecorateGroup.remove(o);
-                    });
-                    
-                
-                    
-                    // draw a bounding box
-                    var bbox = new THREE.BoundingBoxHelper( o, 0xff0000 );
-                    bbox.update();
-                    bbox.object.material.opacity = 0.1;
-                    bbox.object.material.transparent = true;
-                    bbox.material.opacity = 0.1;
-                    bbox.material.transparent = true;
-                    console.log("bbox:", bbox);
-                    //this.sceneAdd( bbox );
-                    this.inspectLastDecorateGroup.add(bbox);
-                    */
-                    
-                    // clone it, make it pretty
-                    /*
-                    var newObj = obj.object.clone();
-                    newObj.material.opacity = 1.0;
-                    
-                    this.inspectLastDecorateGroup.add(newObj);
-                    */
-                    
-                }
-                
-                
-                //io[0].object.material.opacity = 1.0;
-                
-                var pt = io[0].point;
-                // move arrow
-                this.inspectArrowGrp.position.set(pt.x, pt.y, 0);
-                this.inspectCurPos = pt.clone();
-                
-                
-            } else if (false) {
-                
-                // nothing was hit, reset last obj
-                // reset last object
-                console.log("nothing hit. resetting inspectLastObj:", this.inspectLastObj);
-                if (this.inspectLastObj.uuid != "") {
-                    
-                    // remove everything from this.inspectPreviewGroup
-                    this.inspectPreviewGroup.children.forEach(function(threeObj) {
-                        this.inspectPreviewGroup.remove(threeObj);
-                    }, this);
-                    //this.sceneRemove(this.inspectLastObj);
-                    this.inspectLastObj.material.color = 0x0000ff;
-                    this.inspectLastObj.material.opacity = this.inspectLastOpacity;
-                    this.inspectLastObj = {uuid:""};
-                    // hide dialog
-                    this.inspectDlgEl.addClass("hidden");
-                }
-            }
-        },
-        createGlow: function(threeObj) {
-            console.log("createGlow. threeObj:", threeObj);
-            var obj = new THREE.Group();
-            if (threeObj instanceof THREE.Line) {
-                console.log("threeObj is Line");
-                // draw a cube at each end point
-                var v1 = threeObj.geometry.vertices[0];
-                var v2 = threeObj.geometry.vertices[threeObj.geometry.vertices.length - 1];
-                var uv1 = v1.clone();
-                var uv2 = v2.clone();
-                var length = v1.distanceTo(v2);
-                var dir = v2.clone().sub(v1).normalize();
-                var ray = new THREE.Ray(v1, dir);
-                var geometry = new THREE.CylinderGeometry( 1, 1, length );
-                var material = new THREE.MeshNormalMaterial( {
-                    //color: 0x00ff00,
-                    transparent: true,
-                    opacity: 0.1
-                } );
-                var cylinder = new THREE.Mesh( geometry, material );
-                // figure out rotation
-                var arrow = new THREE.ArrowHelper( dir, v1, length, 0xff0000 );
-                obj.add(arrow);
-                //uv2.sub(uv1);
-                /*uv1.normalize();
-                uv2.normalize();
-                var quaternion = new THREE.Quaternion().setFromUnitVectors( uv1, uv2 );
-                var matrix = new THREE.Matrix4().makeRotationFromQuaternion( quaternion );
-                cylinder.applyMatrix( matrix );*/
-                var rot = arrow.rotation.clone()
-                cylinder.rotation.set(rot.x, rot.y, rot.z);
-                var cpos = ray.at(length/2);
-                cylinder.position.set(cpos.x, cpos.y, cpos.z);
-
-                console.log("adding cylinder:", cylinder);
-                obj.add(cylinder);
-            } else {
-                console.log("threeObj not Line");
-                //return 
-            }
-            return obj;
-        },
-        createGlowCubeCaps: function(threeObj) {
-            console.log("createGlow. threeObj:", threeObj);
-            var obj = new THREE.Group();
-            if (threeObj instanceof THREE.Line) {
-                console.log("threeObj is Line");
-                // draw a cube at each end point
-                var v1 = threeObj.geometry.vertices[0];
-                var v2 = threeObj.geometry.vertices[threeObj.geometry.vertices.length - 1];
-                var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-                var material = new THREE.MeshNormalMaterial( {
-                    //color: 0x00ff00,
-                    transparent: true,
-                    opacity: 0.1
-                } );
-                var cube = new THREE.Mesh( geometry, material );
-                cube.position.set(v1.x, v1.y, v1.z);
-                var cube2 = cube.clone();
-                cube2.position.set(v2.x, v2.y, v2.z);
-                //this.sceneAdd( cube );
-                console.log("adding cube:", cube, "cube2:", cube2);
-                obj.add(cube);
-                obj.add(cube2);
-                //return cube;
-            } else {
-                console.log("threeObj not Line");
-                //return 
-            }
-            return obj;
-        },
-        
-
-        // JOG CODE REGION
-        isJogBtnAttached: false, // is the jog btn setup?
-        isJogSelect: false, // indicates we're in 3d jog mode
-        initJog: function() {
-            if (!this.isJogBtnAttached) {
-                // attach click event
-                console.log("doing one time run of initial jog setup. this should not run more than once!!!");
-                $('.com-chilipeppr-widget-3d-menu-jog').click(this.toggleJog.bind(this));
-                
-                // attach shortcut key
-                //$(document).keydown(this.jogKeyDown.bind(this));
-                //$(document).keydown(this.jogKeyUp.bind(this));
-                var el = $('#com-chilipeppr-widget-3dviewer-renderArea');
-                el.focus();
-                $(document).keydown(this.jogKeyDown.bind(this));
-                $(document).keyup(this.jogKeyUp.bind(this));
-                this.isJogBtnAttached = true;
-            }
-        },
-        setupJog: function(evt) {
-            
-            console.log("setupJog.");
-            if (this.isJogSelect) {
-                console.log("we are already in jogging mode. being asked to setup, but returning cuz u can't setup more than once.");
-                return;
-            }
-            //  var el = $(this.renderer.domElement);
-            //var el = $('#com-chilipeppr-widget-3dviewer-renderArea');
-            //el.focus();
-            //console.log("setupJog. el:", el);
-            //el.keydown(this.jogKeyDown.bind(this));
-            //el.keyup(this.jogKeyUp.bind(this));
-            //this.renderer.domElement.addEventListener( 'keydown', this.jogKeyDown.bind(this), false );
-            
-            // start watching mouse
-            var el = $(this.renderer.domElement);
-            el.mousemove(this.jogMouseMove.bind(this));
-            el.click(this.jogMouseClick.bind(this));
-            $('.com-chilipeppr-widget-3d-menu-jog').addClass("active");
-            $('.com-chilipeppr-widget-3d-menu-jog').addClass("btn-primary");
-            // make sure animation stays on
-            //this.gotoXyz({x:0,y:0,z:3});
-            this.isJogSelect = true;
-        },
-        unsetupJog: function() {
-            
-            if (!this.isJogSelect) {
-                console.log("we are being asked to unsetup jog, but it is not running so why are we getting called?");
-                return;
-            }
-            
-            var el = $(this.renderer.domElement);
-            el.unbind("mousemove"); //this.jogMouseMove.bind(this));
-            el.unbind("click");
-            $('.com-chilipeppr-widget-3d-menu-jog').removeClass("active");
-            $('.com-chilipeppr-widget-3d-menu-jog').removeClass("btn-primary");
-            this.unsetupJogRaycaster();
-            this.isJogSelect = false;
-        },
-        toggleJog: function(evt) {
-            if ($('.com-chilipeppr-widget-3d-menu-jog').hasClass("active")) {
-                // turn off
-                this.unsetupJog(evt);
-            } else {
-                this.setupJog(evt);
-            }
-        },
-        jogKeyDown: function(evt) {
-            //console.log("jogKeyDown. evt:", evt);
-            //if ((evt.cltrKey || evt.altKey) && !this.isJogSelect) {
-            //if ((evt.ctrlKey || evt.altKey)  && !this.isJogSelect) {
-            if ((evt.ctrlKey)  && !this.isJogSelect) {
-                //evt.preventDefault();
-                //this.isJogSelect = true;
-                this.wakeAnimate();
-                this.setupJog(evt);
-            } else {
-                //console.log("we are already jogging. ignoring keydown.");
-            }
-        },
-        jogKeyUp: function(evt) {
-            //console.log("jogKeyUp. evt:", evt);
-            //if ((evt.keyCode == 17 || evt.keyCode == 18) && this.isJogSelect) {
-            if ((evt.keyCode == 17) && this.isJogSelect) {
-                //this.isJogSelect = false;
-                this.unsetupJog(evt);
-            }
-        },
-        arrowHelper: null,
-        jogPlane: null,
-        isJogRaycaster: false,
-        jogArrow: null,
-        jogArrowCyl: null,
-        jogArrowLine: null,
-        jogArrowShadow: null,
-        unsetupJogRaycaster: function() {
-            this.sceneRemove(this.jogPlane);
-            this.sceneRemove(this.jogArrow);
-            this.isJogRaycaster = false;
-        },
-        setupJogRaycaster: function() {
-            
-            console.log("doing setupJogRaycaster"); 
-            console.log("mimic grid size:", this.grid);
-            var helper = new THREE.BoundingBoxHelper(this.grid, 0xff0000);
-            helper.update();
-            // If you want a visible bounding box
-            //scene.add(helper);
-            // If you just want the numbers
-            console.log(helper.box.min);
-            console.log(helper.box.max);
-            
-            console.log("boundingbox:", helper.box);
-            var w = helper.box.max.x - helper.box.min.x;
-            var h = helper.box.max.y - helper.box.min.y;
-            
-            // create plane at z 0 to project onto
-            var geometry = new THREE.PlaneBufferGeometry( w, h );
-            var material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
-            this.jogPlane = new THREE.Mesh( geometry, material );
-            //this.scene.add( this.jogPlane );
-            
-            // setup arrow helper
-            /*
-            var length = 50;
-            var hex = 0xffff00;
-            
-            var origin = new THREE.Vector3(0,0,50);
-            var dir = new THREE.Vector3(0,0,-1);
-            //if (this.arrowHelper != null) this.scene.remove(this.arrowHelper);
-            this.arrowHelper = new THREE.ArrowHelper( dir, origin, length, hex );
-            //this.arrowHelper.material.visibility = false;
-            this.scene.add( this.arrowHelper );
-            */
-            
-            console.group("draw jogArrow");
-            
-            // remove grid if drawn previously
-            if (this.jogArrow != null) {
-                console.log("there was a previous jogArrow. remove it. jogArrow:", this.jogArrow);
-                
-                this.sceneRemove(this.jogArrow);
-            } else {
-                console.log("no previous jogArrow.");
-            }
-            
-            // TOOLHEAD WITH SHADOW
-            var jogArrowGrp = new THREE.Object3D();
-            
-            // jogArrow Cylinder
-            // API: THREE.CylinderGeometry(bottomRadius, topRadius, height, segmentsRadius, segmentsHeight)
-            var cylinder = new THREE.Mesh(new THREE.CylinderGeometry(0, 5, 40, 15, 1, false), new THREE.MeshNormalMaterial());
-            cylinder.overdraw = true;
-            cylinder.rotation.x = -90 * Math.PI / 180;
-            cylinder.position.z = 20;
-            //cylinder.position.z = 40;
-            cylinder.material.opacity = 0.3;
-            cylinder.material.transparent = true;
-            cylinder.castShadow = false;
-            console.log("jogArrow cone:", cylinder);
-            
-            // move the cylinder up in the group to account for z pos of toolhead
-            // acct for scale
-            var posZ = (this.toolhead.position.z * 3);
-            cylinder.position.setZ(posZ + 20);
-            this.jogArrowCyl = cylinder;
-            jogArrowGrp.add(cylinder);
-            
-            // scale the whole thing to correctly match mm vs inches
-            var scale = this.getUnitVal(1);
-            jogArrowGrp.scale.set(scale / 3, scale / 3, scale / 3);
-
-            // add fake shadow
-            var triangleShape = new THREE.Shape();
-            triangleShape.moveTo(  0, 0 );
-            triangleShape.lineTo(  -8, 3 );
-            triangleShape.lineTo( -8.5, 2 );
-            triangleShape.lineTo(  -8.7, 1 ); 
-            triangleShape.lineTo(  -8.72, 0 ); 
-            triangleShape.lineTo(  -8.7, -1 ); 
-            triangleShape.lineTo( -8.5, -2 );
-            triangleShape.lineTo(  -8, -3 );
-            triangleShape.lineTo(  0, 0 ); // close path
-            var geometry = new THREE.ShapeGeometry( triangleShape );
-            
-            //var mesh = THREE.SceneUtils.createMultiMaterialObject( geometry, [ new THREE.MeshLambertMaterial( { color: 0x000000, transparent: true, opacity:0.05 } ), new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true, transparent: true } ) ] );
-            var mesh = THREE.SceneUtils.createMultiMaterialObject( geometry, [ new THREE.MeshLambertMaterial( { color: 0x000000, transparent: true, opacity:0.05 } ) ] );
-            //mesh.position.set( x, y, z - 125 );
-            //mesh.rotation.set( rx, ry, rz );
-            //mesh.scale.set( s, s, s );
-            
-            // figure out z position
-            //mesh.position.setZ(this.toolhead.position.z);
-            // move shadow left by the amount by amount of z height
-            mesh.position.setX(posZ * -1);
-            this.jogArrowShadow = mesh;
-            jogArrowGrp.add( mesh );
-            
-            // draw dotted lines from jog tip and shadow
-            var lineMat = new THREE.LineDashedMaterial( { color: 0x000000, xdashSize: 45, xgapSize: 45 } );
-            var lineGeo = new THREE.Geometry();
-            lineGeo.vertices.push(new THREE.Vector3( 0, 0, 0 ));
-            lineGeo.vertices.push(new THREE.Vector3( 0, 0, posZ ));
-            var line = new THREE.Line(lineGeo, lineMat, THREE.LineStrip);
-            this.jogArrowLine = line;
-            jogArrowGrp.add(line);
-            
-            // add text
-            var txt = "Ctrl Click to XY Jog Here";
-            var txtObj = this.makeText({
-                x: 4,
-                y: (this.getUnitVal(7) / 2) *-1,
-                z: 0,
-                text: txt,
-                color: 0x000000,
-                opacity: 0.2,
-                size: 7 //this.getUnitVal(7)
-            });
-            jogArrowGrp.add( txtObj );
-            
-            this.jogArrow = jogArrowGrp;
-            
-            this.sceneAdd(this.jogArrow);
-            
-            console.groupEnd();
-            
-            this.isJogRaycaster = true;
-        },
-        jogMouseClick: function(evt) {
-            console.log("jogMouseClick. evt:", evt);
-            if (evt.ctrlKey || evt.altKey) {
-                if (this.jogCurPos != null) {
-                    var pt = this.jogCurPos;
-                    var gcode = "G90 G0 X" + pt.x.toFixed(3) + " Y" + pt.y.toFixed(3);
-                    gcode += "\n";
-                    chilipeppr.publish("/com-chilipeppr-widget-serialport/send", gcode);
-                } else {
-                    console.warn("this.jogCurPos should not be null");
-                }
-            }
-        },
-        jogCurPos: null,
-        jogMouseMove: function(evt) {
-            
-            //event.preventDefault();
-            if (!this.isJogSelect) {
-                return;
-            }
-            
-            this.wakeAnimate();
-            
-            //console.log("jogMouseMove. evt:", evt);
-
-            var mouse = {};
-            mouse.x = ( evt.clientX / window.innerWidth ) * 2 - 1;
-            mouse.y = - ( evt.clientY / window.innerHeight ) * 2 + 1;
-            
-            var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 ).unproject( this.camera );
-            
-            var origin = this.camera.position.clone();
-            var dir = vector.sub( this.camera.position ).normalize();
-            
-            if (!this.isJogRaycaster) {
-                this.setupJogRaycaster();
-            }
-            
-            var raycaster = new THREE.Raycaster( origin, dir );
-            //console.log("mouse:", mouse, "raycaster:", raycaster);
-            var io = raycaster.intersectObject(this.jogPlane, false);
-            //console.log("io:", io);
-            
-            if (io.length > 0) {
-                // we hit the jog plane
-                var pt = io[0].point;
-                // move arrow
-                this.jogArrow.position.set(pt.x, pt.y, 0);
-                this.jogCurPos = pt.clone();
-            }
-        },
         showShadow: false,
         setupCogMenu: function() {
-            $('.com-chilipeppr-widget-3dviewer-settings-shadows').click( this.onToggleShadowClick.bind(this));
+            $('.com-chilipeppr-widget-3dview-robot-settings-shadows').click( this.onToggleShadowClick.bind(this));
         },
         onToggleShadowClick: function(evt, param) {
             console.log("got onToggleShadowClick. evt:", evt, "param:", param);
@@ -990,42 +269,42 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             this.drawToolhead();
         },
         setupFpsMenu: function() {
-            $('.com-chilipeppr-widget-3dviewer-settings-fr-5').click(5, this.onFpsClick.bind(this));
-            $('.com-chilipeppr-widget-3dviewer-settings-fr-10').click(10, this.onFpsClick.bind(this));
-            $('.com-chilipeppr-widget-3dviewer-settings-fr-15').click(15, this.onFpsClick.bind(this));
-            $('.com-chilipeppr-widget-3dviewer-settings-fr-30').click(30, this.onFpsClick.bind(this));
-            $('.com-chilipeppr-widget-3dviewer-settings-fr-60').click(60, this.onFpsClick.bind(this));
-            $('.com-chilipeppr-widget-3dviewer-settings-fr-0').click(0, this.onFpsClick.bind(this));
-            $('.com-chilipeppr-widget-3dviewer-settings-fr--5').click(-5, this.onFpsClick.bind(this));
+            $('.com-chilipeppr-widget-3dview-robot-settings-fr-5').click(5, this.onFpsClick.bind(this));
+            $('.com-chilipeppr-widget-3dview-robot-settings-fr-10').click(10, this.onFpsClick.bind(this));
+            $('.com-chilipeppr-widget-3dview-robot-settings-fr-15').click(15, this.onFpsClick.bind(this));
+            $('.com-chilipeppr-widget-3dview-robot-settings-fr-30').click(30, this.onFpsClick.bind(this));
+            $('.com-chilipeppr-widget-3dview-robot-settings-fr-60').click(60, this.onFpsClick.bind(this));
+            $('.com-chilipeppr-widget-3dview-robot-settings-fr-0').click(0, this.onFpsClick.bind(this));
+            $('.com-chilipeppr-widget-3dview-robot-settings-fr--5').click(-5, this.onFpsClick.bind(this));
         },
         onFpsClick: function(evt, param) {
             console.log("got onFpsClick. evt:", evt, "param:", param);
             var fr = evt.data;
             this.setFrameRate(fr);
             // set css to show selected
-            $('.com-chilipeppr-widget-3dviewer-settings-fr').removeClass('alert-info');
-            $('.com-chilipeppr-widget-3dviewer-settings-fr-' + fr).addClass('alert-info');
+            $('.com-chilipeppr-widget-3dview-robot-settings-fr').removeClass('alert-info');
+            $('.com-chilipeppr-widget-3dview-robot-settings-fr-' + fr).addClass('alert-info');
             this.wakeAnimate();
         },
         gridSize: 1, // global property for size of grid. default to 1 (shapeoko rough size)
         setupGridSizeMenu: function() {
-            $('.com-chilipeppr-widget-3dviewer-gridsizing-1x').click(1, this.onGridSizeClick.bind(this));
-            $('.com-chilipeppr-widget-3dviewer-gridsizing-2x').click(2, this.onGridSizeClick.bind(this));
-            $('.com-chilipeppr-widget-3dviewer-gridsizing-5x').click(5, this.onGridSizeClick.bind(this));
-            $('.com-chilipeppr-widget-3dviewer-gridsizing-10x').click(10, this.onGridSizeClick.bind(this));
+            $('.com-chilipeppr-widget-3dview-robot-gridsizing-1x').click(1, this.onGridSizeClick.bind(this));
+            $('.com-chilipeppr-widget-3dview-robot-gridsizing-2x').click(2, this.onGridSizeClick.bind(this));
+            $('.com-chilipeppr-widget-3dview-robot-gridsizing-5x').click(5, this.onGridSizeClick.bind(this));
+            $('.com-chilipeppr-widget-3dview-robot-gridsizing-10x').click(10, this.onGridSizeClick.bind(this));
         },
         onGridSizeClick: function(evt, param) {
             console.log("got onGridSizeClick. evt:", evt, "param:", param);
             
             // remove old css
-            $('.com-chilipeppr-widget-3dviewer-gridsizing-' + this.gridSize + 'x').removeClass("alert-info");
+            $('.com-chilipeppr-widget-3dview-robot-gridsizing-' + this.gridSize + 'x').removeClass("alert-info");
             
             var size = evt.data;
             this.gridSize = size;
             // redraw grid
             this.drawGrid();
             
-            $('.com-chilipeppr-widget-3dviewer-gridsizing-' + this.gridSize + 'x').addClass("alert-info");
+            $('.com-chilipeppr-widget-3dview-robot-gridsizing-' + this.gridSize + 'x').addClass("alert-info");
             
         },
         setUnits: function(units) {
@@ -1048,7 +327,7 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             var units = "mm";
             if (!this.isUnitsMm) units = "inch";
             chilipeppr.publish("/" + this.id + "/unitsChanged", units);
-            $('.com-chilipeppr-widget-3dviewer-units-indicator').text(units);
+            $('.com-chilipeppr-widget-3dview-robot-units-indicator').text(units);
         },
         request3dObject: function() {
             console.log("request3dObject");
@@ -1120,11 +399,11 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             });
         },
         forkSetup: function () {
-            //$('#com-chilipeppr-widget-3dviewer .fork').prop('href', this.fiddleurl);
-            //$('#com-chilipeppr-widget-3dviewer .standalone').prop('href', this.url);
-            //var t = $('#com-chilipeppr-widget-3dviewer .fork-name');
+            //$('#com-chilipeppr-widget-3dview-robot .fork').prop('href', this.fiddleurl);
+            //$('#com-chilipeppr-widget-3dview-robot .standalone').prop('href', this.url);
+            //var t = $('#com-chilipeppr-widget-3dview-robot .fork-name');
             //t.html(this.id);
-            $('#com-chilipeppr-widget-3dviewer .panel-title').popover({
+            $('#com-chilipeppr-widget-3dview-robot .panel-title').popover({
                 title: this.name,
                 content: this.desc,
                 html: true,
@@ -1140,7 +419,7 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
                 // "http://fiddle.jshell.net/chilipeppr/zMbL9/show/light/", 
                 function () {
                 require(['inline:com-chilipeppr-elem-pubsubviewer'], function (pubsubviewer) {
-                    pubsubviewer.attachTo($('#com-chilipeppr-widget-3dviewer-dropdown'), that);
+                    pubsubviewer.attachTo($('#com-chilipeppr-widget-3dview-robot-dropdown'), that);
                 });
             });
 
@@ -1167,7 +446,7 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             });
         },
         setDetails: function(txt) {
-            $('#com-chilipeppr-widget-3dviewer-renderArea .data-details').text(txt);
+            $('#com-chilipeppr-widget-3dview-robot-renderArea .data-details').text(txt);
         },
         speedUp: function () {
             //var txt = $('.com-chilipeppr-widget-3d-menu-samplerunspeed').text();
@@ -1177,6 +456,21 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             if (this.tweenSpeed > 1024) this.tweenSpeed = 1;
             var txt = "x" + this.tweenSpeed;
             $('.com-chilipeppr-widget-3d-menu-samplerunspeed').text(txt);
+        },
+
+        openRobot: function() {
+            this.isUnitsMm = true;
+            this.wakeAnimate();
+            this.drawToolhead();
+            this.drawGrid();
+            // this.drawExtentsLabels();
+            this.drawAxes();
+            // this.viewExtents();
+            this.setDetails("Robot Arm Loaded");
+
+            var loader = new THREE.ObjectLoader();
+             
+            this.wakeAnimate();
         },
         openGCodeFromPath: function (path) {
             var that = this;
@@ -1232,7 +526,7 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
                     //this.sceneRemove(this.object);
                     // show err dialog
                     console.error("3D Viewer Widget. out of local storage space, but letting user proceed. err:", e);
-                    $('#com-chilipeppr-widget-3dviewer-outofspace').modal();
+                    $('#com-chilipeppr-widget-3dview-robot-outofspace').modal();
                 } else {
                     console.error("3D Viewer Widget. got err with localStorage:", e);
                 }
@@ -1280,31 +574,47 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             this.camera.updateProjectionMatrix();
         },
         viewExtents: function () {
-            console.log("viewExtents. object.userData:", this.object.userData);
+            if (this.object && this.object.userData) {
+                console.log("viewExtents. object.userData:", this.object.userData);
+            }
             console.log("controls:", this.controls);
             this.wakeAnimate();
             
             // lets override the bounding box with a newly
             // generated one
             // get its bounding box
-            var helper = new THREE.BoundingBoxHelper(this.object, 0xff0000);
-            helper.update();
-            //if (this.bboxHelper)
-            //    this.scene.remove(this.bboxHelper);
-            this.bboxHelper = helper;
-            // If you want a visible bounding box
-            //this.scene.add(this.bboxHelper);
-            console.log("helper bbox:", helper);
+            // var helper = new THREE.BoundingBoxHelper(this.object, 0xff0000);
+            // helper.update();
+            // //if (this.bboxHelper)
+            // //    this.scene.remove(this.bboxHelper);
+            // this.bboxHelper = helper;
+            // // If you want a visible bounding box
+            // //this.scene.add(this.bboxHelper);
+            // console.log("helper bbox:", helper);
+
+            var box3 = new THREE.Box3();
+            var size = new THREE.Vector3(); // create once and reuse
+
+            var boxHelper = new THREE.BoxHelper( this.object );
+            // scene.add( boxHelper );
+
+            box3.setFromObject( boxHelper ); // or from mesh, same answer
+            console.log( "box3:", box3 );
+
+            box3.getSize( size ); // pass in size so a new Vector3 is not allocated
+            console.log( "size:", size );
             
-            var minx = helper.box.min.x;
-            var miny = helper.box.min.y;
-            var maxx = helper.box.max.x;
-            var maxy = helper.box.max.y;
-            var minz = helper.box.min.z;
-            var maxz = helper.box.max.z;
+            var minx = box3.min.x;
+            var miny = box3.min.y;
+            var maxx = box3.max.x;
+            var maxy = box3.max.y;
+            var minz = box3.min.z;
+            var maxz = box3.max.z;
             
             var ud = this.object.userData;
-            ud.bbox2 = helper.box;
+            // ud.bbox2 = helper.box;
+            ud.bbox2 = box3;
+            
             ud.center2.x = minx + ((maxx - minx) / 2);
             ud.center2.y = miny + ((maxy - miny) / 2);
             ud.center2.z = minz + ((maxz - minz) / 2);
@@ -1666,52 +976,7 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             this.tweenIndex = 0;
             this.tween.start();
 
-            /*
-            //var mylines = this.object.userData.lines.slice
-            lastTween = tween;
-            var lineMat = new THREE.LineBasicMaterial({
-                        color: 0xFF0000,
-                        lineWidth: 1,
-                        blending: THREE.AdditiveBlending,
-                        transparent: true,
-                        opacity: 1,
-                    });
-            $.each(this.object.userData.lines.slice(1), function(val, item) {
-                //console.log(val,item); 
-                var ll = lines[val].p2;
-                var cl = item.p2;
-                //console.log(ll, cl);
-                //var lineHighlight;
-                var curTween = new TWEEN.Tween( { x: ll.x, y: ll.y, z: ll.z} )
-                .to( {x: cl.x, y: cl.y, z: cl.z}, 1000 / that.tweenSpeed)
-                //.easing( TWEEN.Easing.Quadratic.InOut )
-                .onStart( function() {
-                    that.tween = curTween;
-                    //console.log("onStart");
-                    // create a new line to show path
-                    var lineGeo = new THREE.Geometry();
-                    lineGeo.vertices.push(new THREE.Vector3(ll.x, ll.y, ll.z), new THREE.Vector3(cl.x, cl.y, cl.z));
-                    var line = new THREE.Line(lineGeo, lineMat);
-                    line.type = THREE.Lines;
-                    that.tweenHighlight = line;
-                    that.scene.add(line);
-                })
-                .onComplete( function() {
-                    //console.log("onComplete");
-                    that.scene.remove(that.tweenHighlight);
-                })
-                .onUpdate( function () {
-                    that.toolhead.position.x = this.x;
-                    that.toolhead.position.y = this.y;
-                    that.toolhead.position.z = this.z + 20;
-                    that.lookAtToolHead();
-                } );
-                lastTween.chain(curTween);
-                lastTween = curTween;
-            });
-            
-            tween.start();
-            */
+
         },
         makeText: function(vals) {
             var shapes, geom, mat, mesh;
@@ -1758,12 +1023,24 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             
             // get its bounding box
             console.log("about to do THREE.BoundingBoxHelper on this.object:", this.object);
-            var helper = new THREE.BoundingBoxHelper(this.object, 0xff0000);
-            helper.update();
-            this.bboxHelper = helper;
-            // If you want a visible bounding box
-            //this.scene.add(helper);
-            console.log("helper bbox:", helper);
+            // var helper = new THREE.BoundingBoxHelper(this.object, 0xff0000);
+            // helper.update();
+            // this.bboxHelper = helper;
+            // // If you want a visible bounding box
+            // //this.scene.add(helper);
+            // console.log("helper bbox:", helper);
+
+            var box3 = new THREE.Box3();
+            var size = new THREE.Vector3(); // create once and reuse
+
+            var boxHelper = new THREE.BoxHelper( this.object );
+            // scene.add( boxHelper );
+
+            box3.setFromObject( boxHelper ); // or from mesh, same answer
+            console.log( "box3:", box3 );
+
+            box3.getSize( size ); // pass in size so a new Vector3 is not allocated
+            console.log( "size:", size );
             
             var color = '#0d0d0d';
             //var color = '#ff0000';
@@ -1779,12 +1056,12 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             var z = 0;
             var offsetFromY = this.getUnitVal(-4); // this means we'll be below the object by this padding
             var lenOfLine = this.getUnitVal(5);
-            var minx = helper.box.min.x;
-            var miny = helper.box.min.y;
-            var maxx = helper.box.max.x;
-            var maxy = helper.box.max.y;
-            var minz = helper.box.min.z;
-            var maxz = helper.box.max.z;
+            var minx = box3.min.x;
+            var miny = box3.min.y;
+            var maxx = box3.max.x;
+            var maxy = box3.max.y;
+            var minz = box3.min.z;
+            var maxz = box3.max.z;
             
             var lineGeo = new THREE.Geometry();
             lineGeo.vertices.push(
@@ -2210,7 +1487,7 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             helper.position.x = 0;
             helper.position.z = 0;
             helper.rotation.x = 90 * Math.PI / 180;
-            helper.material.opacity = 0.15;
+            helper.material.opacity = 0.25;
             helper.material.transparent = true;
             helper.receiveShadow = false;
             console.log("helper grid:", helper);
@@ -2278,7 +1555,12 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
         createScene: function (element) {
 
             console.log("inside createScene: element:", element);
-            if (!Detector.webgl) Detector.addGetWebGLMessage();
+            // if (!Detector.webgl) Detector.addGetWebGLMessage();
+            if ( WEBGL.isWebGLAvailable() === false ) {
+
+				document.body.appendChild( WEBGL.getWebGLErrorMessage() );
+
+			}
 
             // store element on this object
             this.element = element;
@@ -2328,7 +1610,7 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             scene.add(camera);
 
             // Controls
-            //var mouseEvtContainer = $('#com-chilipeppr-widget-3dviewer-renderArea');
+            //var mouseEvtContainer = $('#com-chilipeppr-widget-3dview-robot-renderArea');
             //console.log(mouseEvtContainer);
             //controls = new THREE.TrackballControls(camera, mouseEvtContainer[0]);
             controls = new THREE.TrackballControls(camera, element[0]);
@@ -2349,18 +1631,6 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
 
             // Renderer
             var renderer;
-            /*
-            var renderer = new THREE.WebGLRenderer({
-                clearColor: 0x000000,
-                clearAlpha: 1
-            });
-            */
-            // var renderer = new THREE.WebGLRenderer({
-            //     antialias: true,
-            //     preserveDrawingBuffer: false,
-            //     alpha: false,
-            //     logarithmicDepthBuffer: false
-            // });
             
             var webgl = ( function () { try { return !! window.WebGLRenderingContext && !! document.createElement( 'canvas' ).getContext( 'experimental-webgl' ); } catch( e ) { return false; } } )();
 
@@ -2392,7 +1662,7 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             //renderer.clear();
             
             // cast shadows
-            renderer.shadowMapEnabled = true;
+            // renderer.shadowMapEnabled = true;
             // to antialias the shadow
             renderer.shadowMapSoft = true;
             /*
@@ -2407,171 +1677,10 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             renderer.shadowMapHeight = 1024;
             */
 
-            // Arrow Helper
-            /*
-            var dir = new THREE.Vector3( 1, 0, 0 );
-            var origin = new THREE.Vector3( 0, 0, 0 );
-            var length = 100;
-            var hex = 0xffff00;
-            
-            var arrowHelper = new THREE.ArrowHelper( dir, origin, length, hex );
-            scene.add( arrowHelper );
-            */
-
-            //scene.add( new THREE.PointLightHelper( light, 5 ) );
-            // Show grid
-
-            /* MOVED TO METHOD
-            var helper = new THREE.GridHelper(200, 10);
-            helper.setColors(0x0000ff, 0x808080);
-            helper.position.y = 0;
-            helper.position.x = 0;
-            helper.position.z = 0;
-            helper.rotation.x = 90 * Math.PI / 180;
-            helper.material.opacity = 0.2;
-            helper.material.transparent = true;
-            helper.receiveShadow = true;
-            console.log("helper:", helper);
-            scene.add(helper);
-            */
-            //this.drawGrid();
-            
-            /* MOVED TO METHOD
-            // TOOLHEAD WITH SHADOW
-            var toolheadgrp = new THREE.Object3D();
-            
-            // SHADOWS
-            var light = new THREE.DirectionalLight(0xffffff);
-            //var light = new THREE.SpotLight(0xffffff);
-            light.position.set(0, 60, 60);
-            //light.rotation.x = 90 * Math.PI / 180;
-            //light.lookat(
-            //light.target.position.set(0, 0, 0);
-            light.castShadow = true;
-            light.onlyShadow = true;
-            light.shadowDarkness = 0.05;
-            //light.shadowCameraVisible = true; // only for debugging
-            // these six values define the boundaries of the yellow box seen above
-            light.shadowCameraNear = 0;
-            light.shadowCameraFar = 1000;
-            light.shadowCameraLeft = -5;
-            light.shadowCameraRight = 5;
-            light.shadowCameraTop = 0;
-            light.shadowCameraBottom = -35;
-            //scene.add(light);
-            toolheadgrp.add(light);
-            
-            var light2 = light.clone();
-            light2.position.set(60, 0, 60);
-            light2.shadowCameraLeft = 0; //-5;
-            light2.shadowCameraRight = -35; //5;
-            light2.shadowCameraTop = -5; //0;
-            light2.shadowCameraBottom = 5; //-35;
-            light2.shadowDarkness = 0.03;
-            //light2.rotation.z = 90 * Math.PI / 180;
-            toolheadgrp.add(light2);
-
-            // ToolHead Cylinder
-            // API: THREE.CylinderGeometry(bottomRadius, topRadius, height, segmentsRadius, segmentsHeight)
-            var cylinder = new THREE.Mesh(new THREE.CylinderGeometry(0, 5, 40, 15, 1, false), new THREE.MeshNormalMaterial());
-            cylinder.overdraw = true;
-            cylinder.rotation.x = -90 * Math.PI / 180;
-            cylinder.position.z = 20;
-            //cylinder.position.z = 40;
-            cylinder.material.opacity = 0.5;
-            cylinder.material.transparent = true;
-            cylinder.castShadow = true;
-            //cylinder.receiveShadow = true;
-            console.log("toolhead cone:", cylinder);
-            //scene.add(cylinder);
-            
-            //light.shadowCamera.lookAt(cylinder);
-
-            toolheadgrp.add(cylinder);
-            
-            this.toolhead = toolheadgrp;
-            scene.add(toolheadgrp);
-            */
-            //this.drawToolhead();
-            
-
-            /*
-            // sparks
-            var particleGroup = new SPE.Group({
-                texture: '', 
-                maxAge: 1,
-                colorize: 1,
-                transparent: 1,
-                alphaTest: 0.5,
-                depthWrite: false,
-                depthTest: true,
-                blending: THREE.NormalBlending
-            });
-
-            var emitter = new SPE.Emitter({
-                position: new THREE.Vector3(0, 0, 0),
-                positionSpread: new THREE.Vector3( 0, 0, 1 ),
-
-                acceleration: new THREE.Vector3(0, -1, 0),
-                accelerationSpread: new THREE.Vector3( 1, 0, 1 ),
-
-                velocity: new THREE.Vector3(0, 0, 1),
-                velocitySpread: new THREE.Vector3(1, 1, 1),
-
-                colorStart: new THREE.Color('red'),
-                colorEnd: new THREE.Color('blue'),
-                opacityStart: 0,
-                opacityStartSpread: 0,
-                opacityMiddle: 0.5,
-                opacityMiddleSpread: 0,
-                opacityEnd: 1,
-                opacityEndSpread: 1,
-                
-                sizeStart: 0.01,
-                sizeEnd: 0.5,
-
-                particleCount: 5
-            });
-
-            particleGroup.addEmitter( emitter );
-            var clock = new THREE.Clock();
-            scene.add( particleGroup.mesh );
-            */
-
-            /* MOVED TO METHOD
-            // axes
-            axes = new THREE.AxisHelper(100);
-            scene.add(axes);
-
-            // add axes labels
-            this.makeSprite(scene, "webgl", {
-                x: 110,
-                y: 0,
-                z: 0,
-                text: "X",
-                color: "#ff0000"
-            });
-            this.makeSprite(scene, "webgl", {
-                x: 0,
-                y: 110,
-                z: 0,
-                text: "Y",
-                color: "#00ff00"
-            });
-            this.makeSprite(scene, "webgl", {
-                x: 0,
-                y: 0,
-                z: 110,
-                text: "Z",
-                color: "#0000ff"
-            });
-            */
-            //this.drawAxes();
-
             // Action!
             //controls.addEventListener( 'change', test );
             //element.on('change', test);
-            var mouseEvtContainer = $('#com-chilipeppr-widget-3dviewer-renderArea');
+            var mouseEvtContainer = $('#com-chilipeppr-widget-3dview-robot-renderArea');
             console.log(mouseEvtContainer);
             //mouseEvtContainer.on('mousemove mousedown mousewheel hover click dblclick scroll touchstart touchmove touchenter focus resize', this.wakeAnimate.bind(this));
             //controls.addEventListener( 'change', this.wakeAnimate.bind(this));
@@ -2603,24 +1712,6 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             }
             */
             
-            //setTimeout(this.sleepAnimate, 5000);
-
-            /*
-            function render2(dt) {
-                //controls.update();
-                //particleGroup.tick( dt );
-                renderer.render(scene, camera);
-                //console.log(camera);
-                //TWEEN.update();
-                requestAnimationFrame(render); // And repeat...
-                //stats.update();
-            }
-            */
-            //render( clock.getDelta() );
-            //setTimeout(animate, 0);
-            //render();
-            //animate();
-            //this.animate();
             this.wakeAnimate();
 
             // Fix coordinates up if window is resized.
@@ -2639,8 +1730,6 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             // try to get orbit controls to zoom towards mouse rather than zoom
             // towards center
             // controls.noZoom = true;
-            
-
             mouseEvtContainer.on('mousewheel', function (event){
                 // console.log("mousewheel. event:", event);
                 // controls.noZoom = true;
@@ -2684,7 +1773,7 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             
             if (this.fpsEl == null) {
                 // pull dom el and cache so the dom updates are efficient
-                this.fpsEl = $('#com-chilipeppr-widget-3dviewer .frames-per-sec');
+                this.fpsEl = $('#com-chilipeppr-widget-3dview-robot .frames-per-sec');
             }
 
             // if 3d viewer disabled, exit
@@ -2775,7 +1864,7 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             if (this.frameRateCtr > 200) this.frameRateCtr = 0; // prevent overruns
             */
             
-            TWEEN.update();
+            // TWEEN.update();
             if (this.wantAnimate) {
                 
                 // see if we're adding delay to slow frame rate
@@ -4006,231 +3095,713 @@ cpdefine('inline:com-chilipeppr-widget-3dviewer', ['chilipeppr_ready', 'Three', 
             return geometry;
         },
         
-        /*
-        // marquee selection code
-        // Huge credit to Josh Staples for this code
-        // https://gist.github.com/cubicleDowns/7666452
-        marquee: {
-            
-            listeners: function() {
-                demo.jqContainer.mousedown(mouseDown);
-                demo.jqContainer.mouseup(mouseUp);
-                demo.jqContainer.mousemove(marqueeSelect);
-                $(document).mousemove(resetMarquee);
-            },
-        
-            resetMarquee: function() {
-                mouseup = true;
-                mousedown = false;
-                marquee.fadeOut();
-                marquee.css({width: 0, height: 0});
-                mousedowncoords = {};
-            },
-         
-            mouseDown: function (event) {
-    
-                event.preventDefault();
-                
-                var pos = {};
-                
-                mousedown = true;
-                mousedowncoords = {};
-                
-                mousedowncoords.x = event.clientX;
-                mousedowncoords.y = event.clientY;
-                
-                // adjust the mouse select
-                pos.x = ((event.clientX - offset.x) / demo.jqContainer.width()) * 2 -1;
-                pos.y = -((event.clientY - offset.y) / demo.jqContainer.height()) * 2 + 1;
-    
-                var vector = new THREE.Vector3(pos.x, pos.y, 1);
-                
-                demo.projector.unprojectVector(vector, demo.cameras.liveCam);
-    
-                // removing previous click marker.
-                $(".clickMarkers").remove();
-    
-                // appending a click marker.
-                demo.jqContainer.append('<div class="clickMarkers" style="pointer-events:none; position: absolute; z-index: 100; left: ' + event.offsetX + 'px; top: ' + event.offsetY +'px">D</div>' );
-    
-            },
-
-            mouseUp: function(event) {
-                event.preventDefault();
-                event.stopPropagation();
-                
-                // reset the marquee selection
-                resetMarquee();
-    
-                // appending a click marker.
-                demo.jqContainer.append('<div class="clickMarkers" style="left: ' + event.offsetX + 'px; top: ' + event.offsetY +'px">U</div>' );
-            },
-
-            marqueeSelect: function(event) {
-                event.preventDefault();
-                event.stopPropagation();
-    
-                // make sure we are in a select mode.
-                if(mousedown){
-        
-                    marquee.fadeIn();
-        
-                    var pos = {};
-                    pos.x = event.clientX - mousedowncoords.x;
-                    pos.y = event.clientY - mousedowncoords.y;
-                    
-                    // square variations
-                    // (0,0) origin is the TOP LEFT pixel of the canvas.
-                    //
-                    //  1 | 2
-                    // ---.---
-                    //  4 | 3
-                    // there are 4 ways a square can be gestured onto the screen.  the following detects these four variations
-                    // and creates/updates the CSS to draw the square on the screen
-                    if (pos.x < 0 && pos.y < 0) {
-                        marquee.css({left: event.clientX + 'px', width: -pos.x + 'px', top: event.clientY + 'px', height: -pos.y + 'px'});
-                    } else if ( pos.x >= 0 && pos.y <= 0) {
-                        marquee.css({left: mousedowncoords.x + 'px',width: pos.x + 'px', top: event.clientY, height: -pos.y + 'px'});
-                    } else if (pos.x >= 0 && pos.y >= 0) {
-                        marquee.css({left: mousedowncoords.x + 'px', width: pos.x + 'px', height: pos.y + 'px', top: mousedowncoords.y + 'px'});
-                    } else if (pos.x < 0 && pos.y >= 0) {
-                        marquee.css({left: event.clientX + 'px', width: -pos.x + 'px', height: pos.y + 'px', top: mousedowncoords.y + 'px'});
-                    }
-                    
-                    var selectedCubes = findCubesByVertices({x: event.clientX, y: event.clientY});
-                    
-                    demo.setup.highlight(selectedCubes);
-        
-                }
-            },
-
-            findCubesByVertices: function(location){
-                var currentMouse = {},
-                    mouseInitialDown = {},
-                    units,
-                    bounds,
-                    inside = false,
-                    selectedUnits = [],
-                    dupeCheck = {};
-                
-                currentMouse.x = location.x;
-                currentMouse.y = location.y;
-                
-                mouseInitialDown.x = (mousedowncoords.x - offset.x);
-                mouseInitialDown.y = (mousedowncoords.y - offset.y);
-                
-                units = getUnitVertCoordinates();
-                bounds = findBounds(currentMouse, mousedowncoords);
-                
-                for(var i = 0; i < units.length; i++) {
-                    inside = withinBounds(units[i].pos, bounds);
-                    if(inside && (dupeCheck[units[i].id] === undefined)){
-                        selectedUnits.push(units[i]);
-                        dupeCheck[units[i].name] = true;
-                    }
-                }
-                
-                return selectedUnits;
-            },
-
-            // takes the mouse up and mouse down positions and calculates an origin
-            // and delta for the square.
-            // this is compared to the unprojected XY centroids of the cubes.
-            findBounds: function(pos1, pos2) {
-                
-                // calculating the origin and vector.
-                var origin = {},
-                    delta = {};
-                
-                if (pos1.y < pos2.y) {
-                    origin.y = pos1.y;
-                    delta.y = pos2.y - pos1.y;
-                } else {
-                    origin.y = pos2.y;
-                    delta.y = pos1.y - pos2.y;
-                }
-                
-                if(pos1.x < pos2.x) {
-                    origin.x = pos1.x;
-                    delta.x = pos2.x - pos1.x;
-                } else {
-                    origin.x = pos2.x;
-                    delta.x = pos1.x - pos2.x;
-                }
-                return ({origin: origin, delta: delta});
-            },
-
-
-            // Takes a position and detect if it is within delta of the origin defined by findBounds ({origin, delta})
-            withinBounds: function(pos, bounds) {
-                
-                var ox = bounds.origin.x,
-                    dx = bounds.origin.x + bounds.delta.x,
-                    oy = bounds.origin.y,
-                    dy = bounds.origin.y + bounds.delta.y;
-                
-                if((pos.x >= ox) && (pos.x <= dx)) {
-                    if((pos.y >= oy) && (pos.y <= dy)) {
-                        return true;
-                    }
-                }
-                
-                return false;
-            },
-
-            getUnitVertCoordinates: function(threeJsContext) {
-                
-                var units = [],
-                    verts = [],
-                    child,
-                    prevChild,
-                    unit,
-                    vector,
-                    pos,
-                    temp,
-                    i, q;
-                
-                for(i = 0; i < demo.collisions.length; i++) {
-                    child = demo.collisions[i];
-                    child.updateMatrixWorld();
-                    
-                    verts = [
-                        child.geometry.vertices[0],
-                        child.geometry.vertices[1],
-                        child.geometry.vertices[2],
-                        child.geometry.vertices[3],
-                        child.geometry.vertices[4],
-                        child.geometry.vertices[5],
-                        child.geometry.vertices[6],
-                        child.geometry.vertices[7]
-                    ];
-                    
-                    for(q = 0; q < verts.length; q++) {
-                        vector = verts[q].clone();
-                        vector.applyMatrix4(child.matrixWorld);
-                        unit = {};
-                        unit.id = child.id;
-                        unit.mesh = child;
-                        unit.pos = toScreenXY(vector);;
-                        units.push(unit);
-                    }
-                }
-                return units;
-            },
-
-            toScreenXY: function(position) {
-                
-                var pos = position.clone();
-                var projScreenMat = new THREE.Matrix4();
-                projScreenMat.multiplyMatrices( demo.cameras.liveCam.projectionMatrix, demo.cameras.liveCam.matrixWorldInverse );
-                pos.applyProjection(projScreenMat);
-                
-                return { x: ( pos.x + 1 ) * demo.jqContainer.width() / 2 + demo.jqContainer.offset().left,
-                        y: ( - pos.y + 1) * demo.jqContainer.height() / 2 + demo.jqContainer.offset().top };
-            }
-        }
-        // end marquee object
-        */
+     
     }
-        
+
 });
+
+function loadTrackballControls() {
+}
+    THREE.TrackballControls = function ( object, domElement ) {
+
+        var _this = this;
+        var STATE = { NONE: - 1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
+    
+        this.object = object;
+        this.domElement = ( domElement !== undefined ) ? domElement : document;
+    
+        // API
+    
+        this.enabled = true;
+    
+        this.screen = { left: 0, top: 0, width: 0, height: 0 };
+    
+        this.rotateSpeed = 1.0;
+        this.zoomSpeed = 1.2;
+        this.panSpeed = 0.3;
+    
+        this.noRotate = false;
+        this.noZoom = false;
+        this.noPan = false;
+    
+        this.staticMoving = false;
+        this.dynamicDampingFactor = 0.2;
+    
+        this.minDistance = 0;
+        this.maxDistance = Infinity;
+    
+        this.keys = [ 65 /*A*/, 83 /*S*/, 68 /*D*/ ];
+    
+        // internals
+    
+        this.target = new THREE.Vector3();
+    
+        var EPS = 0.000001;
+    
+        var lastPosition = new THREE.Vector3();
+    
+        var _state = STATE.NONE,
+            _prevState = STATE.NONE,
+    
+            _eye = new THREE.Vector3(),
+    
+            _movePrev = new THREE.Vector2(),
+            _moveCurr = new THREE.Vector2(),
+    
+            _lastAxis = new THREE.Vector3(),
+            _lastAngle = 0,
+    
+            _zoomStart = new THREE.Vector2(),
+            _zoomEnd = new THREE.Vector2(),
+    
+            _touchZoomDistanceStart = 0,
+            _touchZoomDistanceEnd = 0,
+    
+            _panStart = new THREE.Vector2(),
+            _panEnd = new THREE.Vector2();
+    
+        // for reset
+    
+        this.target0 = this.target.clone();
+        this.position0 = this.object.position.clone();
+        this.up0 = this.object.up.clone();
+    
+        // events
+    
+        var changeEvent = { type: 'change' };
+        var startEvent = { type: 'start' };
+        var endEvent = { type: 'end' };
+    
+    
+        // methods
+    
+        this.handleResize = function () {
+    
+            if ( this.domElement === document ) {
+    
+                this.screen.left = 0;
+                this.screen.top = 0;
+                this.screen.width = window.innerWidth;
+                this.screen.height = window.innerHeight;
+    
+            } else {
+    
+                var box = this.domElement.getBoundingClientRect();
+                // adjustments come from similar code in the jquery offset() function
+                var d = this.domElement.ownerDocument.documentElement;
+                this.screen.left = box.left + window.pageXOffset - d.clientLeft;
+                this.screen.top = box.top + window.pageYOffset - d.clientTop;
+                this.screen.width = box.width;
+                this.screen.height = box.height;
+    
+            }
+    
+        };
+    
+        var getMouseOnScreen = ( function () {
+    
+            var vector = new THREE.Vector2();
+    
+            return function getMouseOnScreen( pageX, pageY ) {
+    
+                vector.set(
+                    ( pageX - _this.screen.left ) / _this.screen.width,
+                    ( pageY - _this.screen.top ) / _this.screen.height
+                );
+    
+                return vector;
+    
+            };
+    
+        }() );
+    
+        var getMouseOnCircle = ( function () {
+    
+            var vector = new THREE.Vector2();
+    
+            return function getMouseOnCircle( pageX, pageY ) {
+    
+                vector.set(
+                    ( ( pageX - _this.screen.width * 0.5 - _this.screen.left ) / ( _this.screen.width * 0.5 ) ),
+                    ( ( _this.screen.height + 2 * ( _this.screen.top - pageY ) ) / _this.screen.width ) // screen.width intentional
+                );
+    
+                return vector;
+    
+            };
+    
+        }() );
+    
+        this.rotateCamera = ( function () {
+    
+            var axis = new THREE.Vector3(),
+                quaternion = new THREE.Quaternion(),
+                eyeDirection = new THREE.Vector3(),
+                objectUpDirection = new THREE.Vector3(),
+                objectSidewaysDirection = new THREE.Vector3(),
+                moveDirection = new THREE.Vector3(),
+                angle;
+    
+            return function rotateCamera() {
+    
+                moveDirection.set( _moveCurr.x - _movePrev.x, _moveCurr.y - _movePrev.y, 0 );
+                angle = moveDirection.length();
+    
+                if ( angle ) {
+    
+                    _eye.copy( _this.object.position ).sub( _this.target );
+    
+                    eyeDirection.copy( _eye ).normalize();
+                    objectUpDirection.copy( _this.object.up ).normalize();
+                    objectSidewaysDirection.crossVectors( objectUpDirection, eyeDirection ).normalize();
+    
+                    objectUpDirection.setLength( _moveCurr.y - _movePrev.y );
+                    objectSidewaysDirection.setLength( _moveCurr.x - _movePrev.x );
+    
+                    moveDirection.copy( objectUpDirection.add( objectSidewaysDirection ) );
+    
+                    axis.crossVectors( moveDirection, _eye ).normalize();
+    
+                    angle *= _this.rotateSpeed;
+                    quaternion.setFromAxisAngle( axis, angle );
+    
+                    _eye.applyQuaternion( quaternion );
+                    _this.object.up.applyQuaternion( quaternion );
+    
+                    _lastAxis.copy( axis );
+                    _lastAngle = angle;
+    
+                } else if ( ! _this.staticMoving && _lastAngle ) {
+    
+                    _lastAngle *= Math.sqrt( 1.0 - _this.dynamicDampingFactor );
+                    _eye.copy( _this.object.position ).sub( _this.target );
+                    quaternion.setFromAxisAngle( _lastAxis, _lastAngle );
+                    _eye.applyQuaternion( quaternion );
+                    _this.object.up.applyQuaternion( quaternion );
+    
+                }
+    
+                _movePrev.copy( _moveCurr );
+    
+            };
+    
+        }() );
+    
+    
+        this.zoomCamera = function () {
+    
+            var factor;
+    
+            if ( _state === STATE.TOUCH_ZOOM_PAN ) {
+    
+                factor = _touchZoomDistanceStart / _touchZoomDistanceEnd;
+                _touchZoomDistanceStart = _touchZoomDistanceEnd;
+                _eye.multiplyScalar( factor );
+    
+            } else {
+    
+                factor = 1.0 + ( _zoomEnd.y - _zoomStart.y ) * _this.zoomSpeed;
+    
+                if ( factor !== 1.0 && factor > 0.0 ) {
+    
+                    _eye.multiplyScalar( factor );
+    
+                }
+    
+                if ( _this.staticMoving ) {
+    
+                    _zoomStart.copy( _zoomEnd );
+    
+                } else {
+    
+                    _zoomStart.y += ( _zoomEnd.y - _zoomStart.y ) * this.dynamicDampingFactor;
+    
+                }
+    
+            }
+    
+        };
+    
+        this.panCamera = ( function () {
+    
+            var mouseChange = new THREE.Vector2(),
+                objectUp = new THREE.Vector3(),
+                pan = new THREE.Vector3();
+    
+            return function panCamera() {
+    
+                mouseChange.copy( _panEnd ).sub( _panStart );
+    
+                if ( mouseChange.lengthSq() ) {
+    
+                    mouseChange.multiplyScalar( _eye.length() * _this.panSpeed );
+    
+                    pan.copy( _eye ).cross( _this.object.up ).setLength( mouseChange.x );
+                    pan.add( objectUp.copy( _this.object.up ).setLength( mouseChange.y ) );
+    
+                    _this.object.position.add( pan );
+                    _this.target.add( pan );
+    
+                    if ( _this.staticMoving ) {
+    
+                        _panStart.copy( _panEnd );
+    
+                    } else {
+    
+                        _panStart.add( mouseChange.subVectors( _panEnd, _panStart ).multiplyScalar( _this.dynamicDampingFactor ) );
+    
+                    }
+    
+                }
+    
+            };
+    
+        }() );
+    
+        this.checkDistances = function () {
+    
+            if ( ! _this.noZoom || ! _this.noPan ) {
+    
+                if ( _eye.lengthSq() > _this.maxDistance * _this.maxDistance ) {
+    
+                    _this.object.position.addVectors( _this.target, _eye.setLength( _this.maxDistance ) );
+                    _zoomStart.copy( _zoomEnd );
+    
+                }
+    
+                if ( _eye.lengthSq() < _this.minDistance * _this.minDistance ) {
+    
+                    _this.object.position.addVectors( _this.target, _eye.setLength( _this.minDistance ) );
+                    _zoomStart.copy( _zoomEnd );
+    
+                }
+    
+            }
+    
+        };
+    
+        this.update = function () {
+    
+            _eye.subVectors( _this.object.position, _this.target );
+    
+            if ( ! _this.noRotate ) {
+    
+                _this.rotateCamera();
+    
+            }
+    
+            if ( ! _this.noZoom ) {
+    
+                _this.zoomCamera();
+    
+            }
+    
+            if ( ! _this.noPan ) {
+    
+                _this.panCamera();
+    
+            }
+    
+            _this.object.position.addVectors( _this.target, _eye );
+    
+            _this.checkDistances();
+    
+            _this.object.lookAt( _this.target );
+    
+            if ( lastPosition.distanceToSquared( _this.object.position ) > EPS ) {
+    
+                _this.dispatchEvent( changeEvent );
+    
+                lastPosition.copy( _this.object.position );
+    
+            }
+    
+        };
+    
+        this.reset = function () {
+    
+            _state = STATE.NONE;
+            _prevState = STATE.NONE;
+    
+            _this.target.copy( _this.target0 );
+            _this.object.position.copy( _this.position0 );
+            _this.object.up.copy( _this.up0 );
+    
+            _eye.subVectors( _this.object.position, _this.target );
+    
+            _this.object.lookAt( _this.target );
+    
+            _this.dispatchEvent( changeEvent );
+    
+            lastPosition.copy( _this.object.position );
+    
+        };
+    
+        // listeners
+    
+        function keydown( event ) {
+    
+            if ( _this.enabled === false ) return;
+    
+            window.removeEventListener( 'keydown', keydown );
+    
+            _prevState = _state;
+    
+            if ( _state !== STATE.NONE ) {
+    
+                return;
+    
+            } else if ( event.keyCode === _this.keys[ STATE.ROTATE ] && ! _this.noRotate ) {
+    
+                _state = STATE.ROTATE;
+    
+            } else if ( event.keyCode === _this.keys[ STATE.ZOOM ] && ! _this.noZoom ) {
+    
+                _state = STATE.ZOOM;
+    
+            } else if ( event.keyCode === _this.keys[ STATE.PAN ] && ! _this.noPan ) {
+    
+                _state = STATE.PAN;
+    
+            }
+    
+        }
+    
+        function keyup( event ) {
+    
+            if ( _this.enabled === false ) return;
+    
+            _state = _prevState;
+    
+            window.addEventListener( 'keydown', keydown, false );
+    
+        }
+    
+        function mousedown( event ) {
+    
+            if ( _this.enabled === false ) return;
+    
+            event.preventDefault();
+            event.stopPropagation();
+    
+            if ( _state === STATE.NONE ) {
+    
+                _state = event.button;
+    
+            }
+    
+            if ( _state === STATE.ROTATE && ! _this.noRotate ) {
+    
+                _moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
+                _movePrev.copy( _moveCurr );
+    
+            } else if ( _state === STATE.ZOOM && ! _this.noZoom ) {
+    
+                _zoomStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
+                _zoomEnd.copy( _zoomStart );
+    
+            } else if ( _state === STATE.PAN && ! _this.noPan ) {
+    
+                _panStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
+                _panEnd.copy( _panStart );
+    
+            }
+    
+            document.addEventListener( 'mousemove', mousemove, false );
+            document.addEventListener( 'mouseup', mouseup, false );
+    
+            _this.dispatchEvent( startEvent );
+    
+        }
+    
+        function mousemove( event ) {
+    
+            if ( _this.enabled === false ) return;
+    
+            event.preventDefault();
+            event.stopPropagation();
+    
+            if ( _state === STATE.ROTATE && ! _this.noRotate ) {
+    
+                _movePrev.copy( _moveCurr );
+                _moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
+    
+            } else if ( _state === STATE.ZOOM && ! _this.noZoom ) {
+    
+                _zoomEnd.copy( getMouseOnScreen( event.pageX, event.pageY ) );
+    
+            } else if ( _state === STATE.PAN && ! _this.noPan ) {
+    
+                _panEnd.copy( getMouseOnScreen( event.pageX, event.pageY ) );
+    
+            }
+    
+        }
+    
+        function mouseup( event ) {
+    
+            if ( _this.enabled === false ) return;
+    
+            event.preventDefault();
+            event.stopPropagation();
+    
+            _state = STATE.NONE;
+    
+            document.removeEventListener( 'mousemove', mousemove );
+            document.removeEventListener( 'mouseup', mouseup );
+            _this.dispatchEvent( endEvent );
+    
+        }
+    
+        function mousewheel( event ) {
+    
+            if ( _this.enabled === false ) return;
+    
+            if ( _this.noZoom === true ) return;
+    
+            event.preventDefault();
+            event.stopPropagation();
+    
+            switch ( event.deltaMode ) {
+    
+                case 2:
+                    // Zoom in pages
+                    _zoomStart.y -= event.deltaY * 0.025;
+                    break;
+    
+                case 1:
+                    // Zoom in lines
+                    _zoomStart.y -= event.deltaY * 0.01;
+                    break;
+    
+                default:
+                    // undefined, 0, assume pixels
+                    _zoomStart.y -= event.deltaY * 0.00025;
+                    break;
+    
+            }
+    
+            _this.dispatchEvent( startEvent );
+            _this.dispatchEvent( endEvent );
+    
+        }
+    
+        function touchstart( event ) {
+    
+            if ( _this.enabled === false ) return;
+            
+            event.preventDefault();
+    
+            switch ( event.touches.length ) {
+    
+                case 1:
+                    _state = STATE.TOUCH_ROTATE;
+                    _moveCurr.copy( getMouseOnCircle( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
+                    _movePrev.copy( _moveCurr );
+                    break;
+    
+                default: // 2 or more
+                    _state = STATE.TOUCH_ZOOM_PAN;
+                    var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+                    var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+                    _touchZoomDistanceEnd = _touchZoomDistanceStart = Math.sqrt( dx * dx + dy * dy );
+    
+                    var x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
+                    var y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
+                    _panStart.copy( getMouseOnScreen( x, y ) );
+                    _panEnd.copy( _panStart );
+                    break;
+    
+            }
+    
+            _this.dispatchEvent( startEvent );
+    
+        }
+    
+        function touchmove( event ) {
+    
+            if ( _this.enabled === false ) return;
+    
+            event.preventDefault();
+            event.stopPropagation();
+    
+            switch ( event.touches.length ) {
+    
+                case 1:
+                    _movePrev.copy( _moveCurr );
+                    _moveCurr.copy( getMouseOnCircle( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
+                    break;
+    
+                default: // 2 or more
+                    var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+                    var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+                    _touchZoomDistanceEnd = Math.sqrt( dx * dx + dy * dy );
+    
+                    var x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
+                    var y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
+                    _panEnd.copy( getMouseOnScreen( x, y ) );
+                    break;
+    
+            }
+    
+        }
+    
+        function touchend( event ) {
+    
+            if ( _this.enabled === false ) return;
+    
+            switch ( event.touches.length ) {
+    
+                case 0:
+                    _state = STATE.NONE;
+                    break;
+    
+                case 1:
+                    _state = STATE.TOUCH_ROTATE;
+                    _moveCurr.copy( getMouseOnCircle( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
+                    _movePrev.copy( _moveCurr );
+                    break;
+    
+            }
+    
+            _this.dispatchEvent( endEvent );
+    
+        }
+    
+        function contextmenu( event ) {
+    
+            if ( _this.enabled === false ) return;
+    
+            event.preventDefault();
+    
+        }
+    
+        this.dispose = function () {
+    
+            this.domElement.removeEventListener( 'contextmenu', contextmenu, false );
+            this.domElement.removeEventListener( 'mousedown', mousedown, false );
+            this.domElement.removeEventListener( 'wheel', mousewheel, false );
+    
+            this.domElement.removeEventListener( 'touchstart', touchstart, false );
+            this.domElement.removeEventListener( 'touchend', touchend, false );
+            this.domElement.removeEventListener( 'touchmove', touchmove, false );
+    
+            document.removeEventListener( 'mousemove', mousemove, false );
+            document.removeEventListener( 'mouseup', mouseup, false );
+    
+            window.removeEventListener( 'keydown', keydown, false );
+            window.removeEventListener( 'keyup', keyup, false );
+    
+        };
+    
+        this.domElement.addEventListener( 'contextmenu', contextmenu, false );
+        this.domElement.addEventListener( 'mousedown', mousedown, false );
+        this.domElement.addEventListener( 'wheel', mousewheel, false );
+    
+        this.domElement.addEventListener( 'touchstart', touchstart, false );
+        this.domElement.addEventListener( 'touchend', touchend, false );
+        this.domElement.addEventListener( 'touchmove', touchmove, false );
+    
+        window.addEventListener( 'keydown', keydown, false );
+        window.addEventListener( 'keyup', keyup, false );
+    
+        this.handleResize();
+    
+        // force an update at start
+        this.update();
+    
+    };
+    
+    THREE.TrackballControls.prototype = Object.create( THREE.EventDispatcher.prototype );
+    THREE.TrackballControls.prototype.constructor = THREE.TrackballControls;
+// }
+
+var WEBGL = {
+
+	isWebGLAvailable: function () {
+
+		try {
+
+			var canvas = document.createElement( 'canvas' );
+			return !! ( window.WebGLRenderingContext && ( canvas.getContext( 'webgl' ) || canvas.getContext( 'experimental-webgl' ) ) );
+
+		} catch ( e ) {
+
+			return false;
+
+		}
+
+	},
+
+	isWebGL2Available: function () {
+
+		try {
+
+			var canvas = document.createElement( 'canvas' );
+			return !! ( window.WebGL2RenderingContext && canvas.getContext( 'webgl2' ) );
+
+		} catch ( e ) {
+
+			return false;
+
+		}
+
+	},
+
+	getWebGLErrorMessage: function () {
+
+		return this.getErrorMessage( 1 );
+
+	},
+
+	getWebGL2ErrorMessage: function () {
+
+		return this.getErrorMessage( 2 );
+
+	},
+
+	getErrorMessage: function ( version ) {
+
+		var names = {
+			1: 'WebGL',
+			2: 'WebGL 2'
+		};
+
+		var contexts = {
+			1: window.WebGLRenderingContext,
+			2: window.WebGL2RenderingContext
+		};
+
+		var message = 'Your $0 does not seem to support <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation" style="color:#000">$1</a>';
+
+		var element = document.createElement( 'div' );
+		element.id = 'webglmessage';
+		element.style.fontFamily = 'monospace';
+		element.style.fontSize = '13px';
+		element.style.fontWeight = 'normal';
+		element.style.textAlign = 'center';
+		element.style.background = '#fff';
+		element.style.color = '#000';
+		element.style.padding = '1.5em';
+		element.style.width = '400px';
+		element.style.margin = '5em auto 0';
+
+		if ( contexts[ version ] ) {
+
+			message = message.replace( '$0', 'graphics card' );
+
+		} else {
+
+			message = message.replace( '$0', 'browser' );
+
+		}
+
+		message = message.replace( '$1', names[ version ] );
+
+		element.innerHTML = message;
+
+		return element;
+
+	}
+
+};
