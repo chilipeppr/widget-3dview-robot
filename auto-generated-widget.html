@@ -586,8 +586,8 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
 
             var loader = new THREE.FileLoader();
             var that = this;
-			loader.load( 'scene.json', function ( text ) {
-            // loader.load( 'https://raw.githubusercontent.com/chilipeppr/widget-3dview-robot/master/scene.json', function ( text ) {
+			// loader.load( 'scene.json', function ( text ) {
+            loader.load( 'https://raw.githubusercontent.com/chilipeppr/widget-3dview-robot/master/scene.json', function ( text ) {
 
                 var json = JSON.parse(text);
                 console.log("json:", json);
