@@ -587,6 +587,7 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             var loader = new THREE.FileLoader();
             var that = this;
 			loader.load( 'scene.json', function ( text ) {
+            // loader.load( 'https://raw.githubusercontent.com/chilipeppr/widget-3dview-robot/master/scene.json', function ( text ) {
 
                 var json = JSON.parse(text);
                 console.log("json:", json);
@@ -605,6 +606,7 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
                 // that.controls.showY = false;
                 // that.controls.setSize( that.controls.size + 2 );
 
+                /*
                 var object = that.scene.getObjectByName( "UpperArm.stl", true );
                 console.log("object to attach rotate to:", object);
                 that.controls.attach( object );
@@ -612,6 +614,7 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
                 that.controls.showY = false;
                 that.controls.showZ = false;
                 that.controls.setSize( that.controls.size + 1 );
+                */
 
                 // that.sceneAdd(sceneRobot);
                 console.log("sceneRobot:", sceneRobot);
@@ -770,7 +773,9 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             ud.center2.z = minz + ((maxz - minz) / 2);
             
             //this.controls.enabled = false;
-            this.controls.reset();
+            // If using TrackballControls use the line below
+            // this.controls.reset();
+
             //this.controls.object.rotation._x = 0.5;
             //this.controls.object.rotation._y = 0.5;
             //this.controls.object.rotation._z = 0.5;
@@ -1633,13 +1638,13 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             // draw grid
             var helper = new THREE.GridHelper(widthHeightOfGrid, subSectionsOfGrid, 0x0000ff, 0x808080);
             // helper.setColors(0x0000ff, 0x808080);
-            helper.position.y = 0;
-            helper.position.x = 0;
-            helper.position.z = 0;
-            helper.rotation.x = 90 * Math.PI / 180;
-            helper.material.opacity = 0.25;
+            // helper.position.y = 0;
+            // helper.position.x = 0;
+            // helper.position.z = 0;
+            // helper.rotation.x = 90 * Math.PI / 180;
+            helper.material.opacity = 0.45;
             helper.material.transparent = true;
-            helper.receiveShadow = false;
+            helper.receiveShadow = true;
             console.log("helper grid:", helper);
             this.grid = helper;
             this.sceneAdd(this.grid);
@@ -1701,6 +1706,24 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             this.sceneAdd(this.axes);
 
         },
+        getWhatCameraIsLookingAt: function(camera) {
+
+            console.log("camera:", camera);
+            console.log("cam pos:", camera.position);
+
+            // The camera is looking down its internal negative z-axis, so create a vector pointing down the negative z-axis:
+            var vector = new THREE.Vector3( 0, 0, - 1 );
+
+            // Now, apply the same rotation to the vector that is applied to the camera:
+            vector.applyQuaternion( camera.quaternion );
+            console.log("camera lookat vector:", vector);
+            
+            // The resulting vector will be pointing in the direction that the camera is looking.
+            // Alternatively, you can use the following method, which works even if the camera is a child of another object:
+            var dirVector = camera.getWorldDirection( vector );
+            console.log("camera world lookat vector:", dirVector);
+
+        },
         colorBackground: 0xeeeeee, // this is the background color of the 3d viewer
         createScene: function (element) {
 
@@ -1747,16 +1770,22 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             // Camera...
             // If you make the near and far too much you get
             // a fail on the intersectObjects()
-            var fov = 70,
+            var fov = 50,
                 aspect = element.width() / element.height(),
                 near = 0.01, //01, // 1e-6, //
                 far = 10000,
                 camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
             this.camera = camera;
             camera.rotationAutoUpdate = true;
-            camera.position.x = 10;
-            camera.position.y = -100;
-            camera.position.z = 200;
+            // camera.position.x = 370;
+            // camera.position.y = -350;
+            // camera.position.z = 1450;
+            camera.position.set( 1000, 500, 1000 );
+            camera.lookAt( 0, 200, 0 );
+            // camera.up = new THREE.Vector3(0,0,1);
+            // Vector3 {x: -0.8526811091969646, y: 0.3802994799004513, z: -0.3581999882831947}
+            // camera.lookAt(new THREE.Vector3(-0.859,0.439,-0.261));
+            // camera.lookAt(new THREE.Vector3(4000,4000,4000));
             scene.add(camera);
 
             // Controls
@@ -1780,6 +1809,8 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             //controls.addEventListener( 'change', render );
             document.addEventListener( 'mousemove', controls.update.bind( controls ), false );
             document.addEventListener( 'touchmove', controls.update.bind( controls ), false );
+            controls.addEventListener( 'start', this.animNoSleep.bind(this));
+            controls.addEventListener( 'end', this.animAllowSleep.bind(this));
             */
 
             var that = this;
@@ -1790,11 +1821,15 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             // this.orbit.addEventListener( 'change', render );
             this.orbit.addEventListener( 'start', this.animNoSleep.bind(this));
             this.orbit.addEventListener( 'end', this.animAllowSleep.bind(this));
+            
+
+            // TransformControls area
             this.controls = new THREE.TransformControls( camera, element[0] );
             // this.controls.addEventListener( 'change', render );
             this.controls.addEventListener( 'start', this.animNoSleep.bind(this));
             this.controls.addEventListener( 'end', this.animAllowSleep.bind(this));
             this.controls.addEventListener( 'dragging-changed', function ( event ) {
+                // only do this line if using OrbitControls
                 that.orbit.enabled = ! event.value;
             } );
             // var mesh = new THREE.Mesh( geometry, material );
@@ -2102,8 +2137,14 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             //this.cancelSleep();
             this.wakeAnimate();
         },
-        animAllowSleep: function() {
-            //console.log("anim allow sleep");
+        animAllowSleep: function(args) {
+            console.log("anim allow sleep. args:", args, args.target.object.position);
+            var camera = args.target.object;
+            console.log("camera:", camera);
+            var vector = new THREE.Vector3(0, 0, -1);
+            vector.applyEuler(camera.rotation, camera.eulerOrder);
+            console.log("lookat:", vector);
+            this.getWhatCameraIsLookingAt(camera);
             
             // even if we're being asked to allow sleep
             // but the tween is playing, don't allow it

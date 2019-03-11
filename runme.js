@@ -1653,6 +1653,7 @@ var getAllUrls = function() {
       ret.testNoSsl = 'http://' + process.env.C9_PID + '.vfs.cloud9.' + region + '.amazonaws.com/widget.html';
       // http://83c03ab3f6f9431aa813882decbfc4aa.vfs.cloud9.us-west-2.amazonaws.com/
       ret.runmeHomepage = 'https://' + process.env.C9_PID + '.vfs.cloud9.' + region + '.amazonaws.com/';
+    
     } else if (isC9Environment()) {
       // we are in original cloud9
       // var ret.edit = 'http://' +
@@ -1677,10 +1678,10 @@ var getAllUrls = function() {
       //     process.env.C9_PROJECT + '-' + process.env.C9_USER +
       //     '.c9users.io/widget.html';
       ret.edit = '(Local dev. No edit URL)';
-      ret.test = 'http://localhost:9000/widget.html';
-      ret.testNoSsl = 'http://localhost:9000/widget.html';
+      ret.test = 'http://localhost:' + process.env.PORT + '/widget.html';
+      ret.testNoSsl = 'http://localhost:' + process.env.PORT + '/widget.html';
       // https://widget-xbox-chilipeppr.c9users.io/
-      ret.runmeHomepage = 'http://localhost:9000/';
+      ret.runmeHomepage = 'http://localhost:' + process.env.PORT + '/';
     }
     
     return ret;
