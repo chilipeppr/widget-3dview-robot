@@ -578,7 +578,7 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
         openRobot: function() {
             this.isUnitsMm = true;
             this.wakeAnimate();
-            this.drawToolhead();
+            // this.drawToolhead();
             this.drawGrid();
             // this.drawExtentsLabels();
             this.drawAxes();
@@ -594,35 +594,282 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
                 var loader = new THREE.ObjectLoader();
                 var sceneRobot = loader.parse( json );
                 that.object = sceneRobot;
+
+                // rotate by 90 degrees to make it straight
+                // that.object.rotation.x = Math.PI / -2;
+                that.object.position.z = -150;
+                that.object.position.y = -150;
+                that.object.castShadow = true;
+                that.object.receiveShadow = true;
                 that.scene.add(that.object);
 
+                // now draw a ground
+                var groundGeometry = new THREE.BoxBufferGeometry( 1000, 1000, 0.1 );
+				var groundMaterial = new THREE.MeshLambertMaterial( { color: 'rgb(80,80,80)' } ); //, opacity: 0.1, transparent: true } );
+				groundMesh = new THREE.Mesh( groundGeometry, groundMaterial );
+				groundMesh.position.z = -80.1; //this value must be slightly lower than the planeConstant (0.01) parameter above
+                groundMesh.receiveShadow = true;
+                that.object.add( groundMesh );
+
+                // Add a shadow casting light
+                //Create a PointLight and turn on shadows for the light
+                var light = new THREE.PointLight( 0xffffff, 0.1, 0, 2 );
+                light.position.set( -500, 100, 800 );
+                light.castShadow = true;            // default false
+                // light.shadowDarkness = 0.1;
+                light.shadow.radius = 18;
+                light.target = this.object;
+                // light.target.updateMatrixWorld()
+                that.scene.add( light );
+
+                //Set up shadow properties for the light
+                light.shadow.mapSize.width = 512 * 4;  // default
+                light.shadow.mapSize.height = 512 * 4; // default
+                light.shadow.camera.near = 10;       // default
+                light.shadow.camera.far = 1600      // default
+                // light.shadow.camera.lookAt(0,0,0);
+                // that.scene.add(light);
+
+                // Add ambient light to lighten up the shadow
+                that.scene.add( new THREE.AmbientLight( 0xffffff, 0.6 ) );
+
+                //Create a helper for the shadow camera (optional)
+                // var helper = new THREE.CameraHelper( light.shadow.camera );
+                // that.scene.add( helper );
+
+                // Make every part of the STL robot object cast a shadow
+                that.object.getObjectByName('Basecone.stl').traverse( function ( child ) {
+                    if ( child instanceof THREE.Mesh ) {
+                        // child.material.map = texture;
+                        child.castShadow = true; 
+                        // child.material.transparent = true;
+                        // child.material.opacity = 0.5;          
+                    }
+                } );
+
                 // attach rotate control
-                console.log("rotate object:", that.object);
+                // console.log("rotate object:", that.object);
 
                 // var object = that.scene.getObjectByName( "Ring48_20pOriginBelowObject.stl", true );
                 // that.controls.attach( object );
                 // that.controls.setMode( "rotate" );
                 // that.controls.showX = false;
                 // that.controls.showY = false;
-                // that.controls.setSize( that.controls.size + 2 );
+                // that.controls.setSize( that.controls.size - 0.5 );
 
-                /*
-                var object = that.scene.getObjectByName( "UpperArm.stl", true );
-                console.log("object to attach rotate to:", object);
-                that.controls.attach( object );
-                that.controls.setMode( "rotate" );
-                that.controls.showY = false;
-                that.controls.showZ = false;
-                that.controls.setSize( that.controls.size + 1 );
-                */
+                
+                // var object = that.scene.getObjectByName( "UpperArm.stl", true );
+                // console.log("object to attach rotate to:", object);
+                // that.controls.attach( object );
+                // that.controls.setMode( "rotate" );
+                // that.controls.showY = false;
+                // that.controls.showZ = false;
+                // that.controls.setSize( that.controls.size - 0.7 );
+                
+                // Setup raycaster for selection of parts of robot arm
+                that.raycaster = new THREE.Raycaster();
+                that.mouse = new THREE.Vector2();
+
+                window.addEventListener( 'mousemove', that.onMouseMove.bind(that), false );
+                window.addEventListener( 'mousedown', that.onMouseDown.bind(that), false );
+                // window.addEventListener( 'mouseup', that.onMouseUp.bind(that), false );
+                that.controls.addEventListener( 'dragging-changed', that.onTransformControlDragChanged.bind(that) );
+
+                // Zoom to Mouse position
+                that.orbit.noZoom = true;
+
+                // so that left/right keyboard keys wake up the animation
+                $('body').on('keydown', that.wakeAnimate.bind(that));
+
+                $('body').on('mousewheel', function (e){
+
+                    that.wakeAnimate();
+
+                    var factor = 20;
+                    var mX = ( event.clientX / window.innerWidth ) * 2 - 1;
+                    var mY = - ( event.clientY / window.innerHeight ) * 2 + 1;
+                    var vector = new THREE.Vector3(mX, mY, 1 );
+                    vector.unproject(that.camera);
+                    vector.sub(that.camera.position);
+                    if ( e.originalEvent.deltaY < 0 ) {
+                        that.camera.position.addVectors(that.camera.position,vector.setLength(factor));
+                        that.orbit.target.addVectors(that.orbit.target,vector.setLength(factor));
+                    } else {
+                        that.camera.position.subVectors(that.camera.position,vector.setLength(factor));
+                        that.orbit.target.subVectors(that.orbit.target,vector.setLength(factor));
+                    }
+
+                    // var WIDTH = window.innerWidth;
+                    // var HEIGHT = window.innerHeight;
+            
+                    // var mouseX = (e.clientX - (WIDTH/2)) * 10;
+                    // var mouseY = (e.clientY - (HEIGHT/2)) * 10;
+
+                    // if(e.originalEvent.deltaY < 0){ // zoom to the front
+                    //     that.camera.position.x -= mouseX * .00125;
+                    //     that.camera.position.y += mouseY * .00125;
+                    //     that.camera.position.z += 1.1 * 10;
+                    //     that.orbit.target.x -= mouseX * .00125;
+                    //     that.orbit.target.y += mouseY * .00125;
+                    //     that.orbit.target.z += 1.1 * 10;
+                    // }else{                          // zoom to the back
+                    //     that.camera.position.x += mouseX * .00125;
+                    //     that.camera.position.y -= mouseY * .00125;
+                    //     that.camera.position.z -= 1.1 * 10;
+                    //     that.orbit.target.x += mouseX * .00125;
+                    //     that.orbit.target.y -= mouseY * .00125;
+                    //     that.orbit.target.z -= 1.1 * 10;
+                    // }
+                });
 
                 // that.sceneAdd(sceneRobot);
                 console.log("sceneRobot:", sceneRobot);
-                that.viewExtents();
+                // that.viewExtents();
 
 			} );
              
             this.wakeAnimate();
+        },
+        onTransformControlDragChanged: function(event) {
+            // this.isIgnoreMouseDown = true;
+            // console.log("onTransformControlDragChanged. event:", event);
+            // don't raycast while in the middle of dragging
+            if (event.value) {
+                // we started our drag on the rotation widget
+                this.ignoreRaycasting = true;
+                this.setNoRobotOpacity();
+            } else {
+                this.ignoreRaycasting = false;
+            }
+        },
+        // isIgnoreMouseDown: false,
+        onMouseDown: function( event ) {
+            
+            // we need to wakeup the animation on mousemove
+            this.wakeAnimate();
+
+            if (this.ignoreRaycasting) return;
+
+            console.log("onMouseDown. event:", event);
+
+            // update the picking ray with the camera and mouse position
+            this.raycaster.setFromCamera( this.mouse, this.camera );
+
+            // calculate objects intersecting the picking ray
+            // check the Basecone and all descendents, thus true in 2nd param
+            var intersects = this.raycaster.intersectObject( this.object.getObjectByName('Basecone.stl'), true );
+            console.log("did raycaster. intersects:", intersects);
+
+            // don't redo the opacity or rotate attach if we are on the same
+            // object
+            if (intersects.length > 0 ) {
+
+                // console.log("raycast obj:", intersects[0], "objToRotate:", intersects[0].object.userData.objToRotate);
+            
+                // just look at first item
+
+                // set the rotate item
+                console.log("isClick setting rotate widget");
+                var objToRotate = this.object.getObjectByName(intersects[0].object.userData.objToRotate, true);
+                // console.log("objToRotate:", intersects[0].object.userData.objToRotate, objToRotate);
+                // this.controls.detach();
+                this.controls.attach( objToRotate );
+                this.controls.setMode( "rotate" );
+                this.controls.setSpace("local");
+                this.controls.showX = objToRotate.userData.showX;
+                this.controls.showY = objToRotate.userData.showY;
+                this.controls.showZ = objToRotate.userData.showZ;
+                // this.controls.setSize( this.controls.size - 0.5 );
+                this.controls.setSize( 0.3 );
+
+                // set some quick material to indicate mouse clicked
+                
+            } else {
+                this.controls.detach();
+            }
+        },
+        onMouseUp: function( event ) {
+
+        },
+        onMouseMove: function( event ) {
+
+            // we need to wakeup the animation on mousemove
+            this.wakeAnimate();
+
+            // calculate mouse position in normalized device coordinates
+            // (-1 to +1) for both components
+            this.mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+            this.mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+        },
+        lastIntersectSecNum: null,
+        ignoreRaycasting: false,
+        checkRaycast: function() {
+
+            if (this.ignoreRaycasting) return;
+
+            // update the picking ray with the camera and mouse position
+            this.raycaster.setFromCamera( this.mouse, this.camera );
+
+            // calculate objects intersecting the picking ray
+            // check the Basecone and all descendents, thus true in 2nd param
+            var intersects = this.raycaster.intersectObject( this.object.getObjectByName('Basecone.stl'), true );
+            // console.log("did raycaster. intersects:", intersects);
+
+            // don't redo the opacity or rotate attach if we are on the same
+            // object
+            if (intersects.length > 0 ) {
+
+                if (this.lastIntersectSecNum != intersects[0].object.userData.secNum) {
+                    // record that we're setting up this item so we can ignore next time
+                    this.lastIntersectSecNum = intersects[0].object.userData.secNum;
+
+                    // console.log("raycast obj:", intersects[0], "objToRotate:", intersects[0].object.userData.objToRotate);
+                
+                    // just look at first item
+
+                    this.setAllRobotOpacity(0.5);
+                    // take its userData of "secNum" which was set in the three.js editor
+                    // and make all objects with that "secNum" be opacity = 1
+                    this.setOpacityForAllWithUserdata("secNum", intersects[0].object.userData.secNum);
+
+                    // for ( var i = 0; i < intersects.length; i++ ) {
+                    //     intersects[ i ].object.material.opacity = 1; //.color.set( 0xff0000 );
+                    // }
+                }
+
+            } else {
+                // we had no intersects
+                // set everything to no opacity
+                // console.log("no intersect");
+                this.setNoRobotOpacity();
+            }
+        },
+        setOpacityForAllWithUserdata(key, val) {
+            this.object.getObjectByName('Basecone.stl').traverse( function ( child ) {
+                if ( child instanceof THREE.Mesh && child.userData[key] == val) {
+                    child.material.opacity = 1; 
+                    child.material.transparent = false;         
+                }
+            } );
+        },
+        setAllRobotOpacity: function(opacity) {
+            if (!opacity) opacity = 0.5;
+            this.object.getObjectByName('Basecone.stl').traverse( function ( child ) {
+                if ( child instanceof THREE.Mesh ) {
+                    child.material.opacity = opacity;
+                    child.material.transparent = true;          
+                }
+            } );
+        },
+        setNoRobotOpacity: function(opacity) {
+            if (!opacity) opacity = 1;
+            this.object.getObjectByName('Basecone.stl').traverse( function ( child ) {
+                if ( child instanceof THREE.Mesh ) {
+                    child.material.opacity = opacity;
+                    child.material.transparent = false;          
+                }
+            } );
         },
         openGCodeFromPath: function (path) {
             var that = this;
@@ -731,6 +978,8 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             }
             console.log("controls:", this.controls);
             this.wakeAnimate();
+            this.orbit.reset();
+            return;
             
             // lets override the bounding box with a newly
             // generated one
@@ -1404,7 +1653,7 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
 
             var material = new THREE.SpriteMaterial({
                 map: texture,
-                useScreenCoordinates: false,
+                useScreenCoordinates: true,
                 transparent: true,
                 opacity: 0.6
             });
@@ -1422,8 +1671,12 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             } else {
                 sprite.scale.set(textWidth / textHeight * actualFontSize, actualFontSize, 1);
             }
-
+            // textObject.rotation.y = Math.PI;
+            // textObject.up.set(new Vector3(0,0,1));
+            sprite.center.set( 0,-1,0 );
             textObject.add(sprite);
+
+            console.log("textObject:", textObject);
 
             //scene.add(textObject);
             return textObject;
@@ -1445,7 +1698,7 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             // these are drawn after the gcode is rendered now
             // so we can see if in inch or mm mode
             // these items scale based on that mode
-            this.drawToolhead();
+            // this.drawToolhead();
             this.drawGrid();
             this.drawExtentsLabels();
             this.drawAxes();
@@ -1453,6 +1706,8 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
         shadowplane: null,
         drawToolhead: function() {
             
+            return;
+
             console.group("drawToolhead");
             
             // remove grid if drawn previously
@@ -1633,15 +1888,15 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             
             // see if user wants to size up grid. default is size 1
             // so this won't modify size based on default
-            widthHeightOfGrid = widthHeightOfGrid * this.gridSize;
+            widthHeightOfGrid = widthHeightOfGrid * this.gridSize * 2;
             
             // draw grid
             var helper = new THREE.GridHelper(widthHeightOfGrid, subSectionsOfGrid, 0x0000ff, 0x808080);
-            // helper.setColors(0x0000ff, 0x808080);
-            // helper.position.y = 0;
-            // helper.position.x = 0;
-            // helper.position.z = 0;
-            // helper.rotation.x = 90 * Math.PI / 180;
+            helper.setColors(0x0000ff, 0x808080);
+            helper.position.y = 0;
+            helper.position.x = 0;
+            helper.position.z = -150 - 80;
+            helper.rotation.x = 90 * Math.PI / 180;
             helper.material.opacity = 0.45;
             helper.material.transparent = true;
             helper.receiveShadow = true;
@@ -1672,7 +1927,8 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             axes.material.transparent = true;
             axes.material.opacity = 0.8;
             axes.material.depthWrite = false;
-            axes.position.set(0,0,-0.0001);
+            var posZ = -150 - 80 + 0.001;
+            axes.position.set(0,0,posZ);
             //this.scene.add(axes);
             axesgrp.add(axes);
 
@@ -1680,25 +1936,30 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             var xlbl = this.makeSprite(this.scene, "webgl", {
                 x: this.getUnitVal(110),
                 y: 0,
-                z: 0,
+                z: posZ + 10,
                 text: "X",
-                color: "#ff0000"
+                color: "#ff0000",
+                // scale: -1,
             });
             var ylbl = this.makeSprite(this.scene, "webgl", {
                 x: 0,
                 y: this.getUnitVal(110),
-                z: 0,
+                z: posZ + 10,
                 text: "Y",
+                // scale: -1,
                 color: "#00ff00"
             });
+            // ylbl.rotation.x = Math.PI;
             var zlbl = this.makeSprite(this.scene, "webgl", {
                 x: 0,
                 y: 0,
-                z: this.getUnitVal(110),
+                z: this.getUnitVal(110) + posZ,
                 text: "Z",
+                // scale: -1,
                 color: "#0000ff"
             });
             
+            console.log("xlbl:", xlbl);
             axesgrp.add(xlbl);
             axesgrp.add(ylbl);
             axesgrp.add(zlbl);
@@ -1707,6 +1968,7 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
 
         },
         getWhatCameraIsLookingAt: function(camera) {
+            return;
 
             console.log("camera:", camera);
             console.log("cam pos:", camera.position);
@@ -1772,17 +2034,20 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             // a fail on the intersectObjects()
             var fov = 50,
                 aspect = element.width() / element.height(),
-                near = 0.01, //01, // 1e-6, //
-                far = 10000,
+                near = 1, //01, // 1e-6, //
+                far = 5000,
                 camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
             this.camera = camera;
-            camera.rotationAutoUpdate = true;
+            // camera.rotationAutoUpdate = true;
             // camera.position.x = 370;
             // camera.position.y = -350;
             // camera.position.z = 1450;
             camera.position.set( 1000, 500, 1000 );
-            camera.lookAt( 0, 200, 0 );
-            // camera.up = new THREE.Vector3(0,0,1);
+            camera.up = new THREE.Vector3(0,0,1);
+            camera.fov *= 0.3;
+            camera.updateProjectionMatrix();
+            camera.lookAt( 0, 0, 0 );
+            camera.updateProjectionMatrix();
             // Vector3 {x: -0.8526811091969646, y: 0.3802994799004513, z: -0.3581999882831947}
             // camera.lookAt(new THREE.Vector3(-0.859,0.439,-0.261));
             // camera.lookAt(new THREE.Vector3(4000,4000,4000));
@@ -1858,6 +2123,8 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
                 return;
             };
 
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
+
             renderer.shadowMap.enabled = true;
             renderer.gammaOutput = true;
             renderer.setPixelRatio( window.devicePixelRatio );
@@ -1875,7 +2142,7 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             // cast shadows
             // renderer.shadowMapEnabled = true;
             // to antialias the shadow
-            renderer.shadowMapSoft = true;
+            // renderer.shadowMapSoft = true;
             /*
             renderer.shadowCameraNear = 3;
             renderer.shadowCameraFar = camera.far;
@@ -1977,6 +2244,7 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             this.renderer.setSize(this.element.width(), this.element.height());
             this.camera.aspect = this.element.width() / this.element.height();
             this.camera.updateProjectionMatrix();
+            // probably need to rework this to this.orbit
             this.controls.screen.width = window.innerWidth;
             this.controls.screen.height = window.innerHeight;
             this.wakeAnimate();
@@ -2097,6 +2365,12 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             // this.controls.update();
             this.renderer.render(this.scene, this.camera);
             this.renderFrameCtr++;
+
+            // watch the mousemove and check what the mouse is over so we can hilite
+            // the robot
+            if (this.mouse && this.object) {
+                this.checkRaycast();
+            }
         },
         wakeAnimate: function(evt) {
             
@@ -2138,13 +2412,13 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             this.wakeAnimate();
         },
         animAllowSleep: function(args) {
-            console.log("anim allow sleep. args:", args, args.target.object.position);
-            var camera = args.target.object;
-            console.log("camera:", camera);
-            var vector = new THREE.Vector3(0, 0, -1);
-            vector.applyEuler(camera.rotation, camera.eulerOrder);
-            console.log("lookat:", vector);
-            this.getWhatCameraIsLookingAt(camera);
+            console.log("anim allow sleep."); // args:", args, args.target.object.position);
+            // var camera = args.target.object;
+            // console.log("camera:", camera);
+            // var vector = new THREE.Vector3(0, 0, -1);
+            // vector.applyEuler(camera.rotation, camera.eulerOrder);
+            // console.log("lookat:", vector);
+            // this.getWhatCameraIsLookingAt(camera);
             
             // even if we're being asked to allow sleep
             // but the tween is playing, don't allow it
