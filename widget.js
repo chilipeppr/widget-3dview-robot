@@ -2141,8 +2141,8 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             this.camera.aspect = this.element.width() / this.element.height();
             this.camera.updateProjectionMatrix();
             // probably need to rework this to this.orbit
-            this.orbit.screen.width = window.innerWidth;
-            this.orbit.screen.height = window.innerHeight;
+            // this.orbit.screen.width = window.innerWidth;
+            // this.orbit.screen.height = window.innerHeight;
             this.wakeAnimate();
         },
         mytimeout: null,
