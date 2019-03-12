@@ -973,12 +973,14 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
             this.camera.updateProjectionMatrix();
         },
         viewExtents: function () {
-            if (this.object && this.object.userData) {
-                console.log("viewExtents. object.userData:", this.object.userData);
-            }
-            console.log("controls:", this.controls);
+            // if (this.object && this.object.userData) {
+            //     console.log("viewExtents. object.userData:", this.object.userData);
+            // }
+            // console.log("controls:", this.controls);
             this.wakeAnimate();
-            this.orbit.reset();
+            if (this.orbit) {
+                this.orbit.reset();
+            }
             return;
             
             // lets override the bounding box with a newly
