@@ -30,7 +30,7 @@ console.log("Starting...");
 
 if (process.env.PORT == undefined) {
   console.log("Port undefined from env var so setting to 9000");
-  process.env.PORT = 9000;
+  process.env.PORT = 9003;
 }
 
 http.createServer(function(req, res) {
