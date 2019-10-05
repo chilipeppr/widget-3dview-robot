@@ -566,18 +566,24 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
                 that.raycaster = new THREE.Raycaster();
                 that.mouse = new THREE.Vector2();
 
+                // Get element for render area so we can bind events to that rather than the window
+                var renderEl = $('#com-chilipeppr-widget-3dview-robot-renderArea');
+
                 // window.addEventListener( 'mousemove', that.onMouseMove.bind(that), false );
                 // window.addEventListener( 'mousedown', that.onMouseDown.bind(that), false );
-                that.controls.addEventListener( 'mousemove', that.onMouseMove.bind(that), false );
-                that.controls.addEventListener( 'mousedown', that.onMouseDown.bind(that), false );
+                renderEl[0].addEventListener( 'mousemove', that.onMouseMove.bind(that), false );
+                renderEl[0].addEventListener( 'mousedown', that.onMouseDown.bind(that), false );
                 // window.addEventListener( 'mouseup', that.onMouseUp.bind(that), false );
-                that.controls.addEventListener( 'dragging-changed', that.onTransformControlDragChanged.bind(that) );
+                renderEl[0].addEventListener( 'dragging-changed', that.onTransformControlDragChanged.bind(that) );
+
+                renderEl[0].addEventListener( 'touchmove', that.onMouseOrTouch.bind(that) );
+                renderEl[0].addEventListener('scroll', that.onScroll.bind(that) );
+                renderEl[0].addEventListener("mousewheel", that.onScroll.bind(that) );
+                renderEl[0].addEventListener("DOMMouseScroll", that.onScroll.bind(that) );
 
                 // Zoom to Mouse position
                 that.orbit.enableZoom = false;
                 
-                // Get element for render area so we can bind events to that rather than the window
-                var renderEl = $('#com-chilipeppr-widget-3dview-robot-renderArea');
                 // so that left/right keyboard keys wake up the animation
                 // $('body').on('keydown', that.wakeAnimate.bind(that));
                 renderEl.on('keydown', that.wakeAnimate.bind(that));
@@ -632,6 +638,15 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
 			} );
              
             this.wakeAnimate();
+        },
+        onScroll: function(evt) {
+            // console.log("got onscroll. evt:", evt);
+            this.controls.update();
+        },
+        onMouseOrTouch: function(evt) {
+            // console.log("got mouse or touch. evt:", evt);
+            this.controls.update();
+            // this.renderer.render(this.scene, this.camera);
         },
         onTransformControlDragChanged: function(event) {
             // this.isIgnoreMouseDown = true;
