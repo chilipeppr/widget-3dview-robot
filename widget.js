@@ -566,19 +566,26 @@ cpdefine('inline:com-chilipeppr-widget-3dview-robot', ['chilipeppr_ready', 'Thre
                 that.raycaster = new THREE.Raycaster();
                 that.mouse = new THREE.Vector2();
 
-                window.addEventListener( 'mousemove', that.onMouseMove.bind(that), false );
-                window.addEventListener( 'mousedown', that.onMouseDown.bind(that), false );
+                // window.addEventListener( 'mousemove', that.onMouseMove.bind(that), false );
+                // window.addEventListener( 'mousedown', that.onMouseDown.bind(that), false );
+                that.controls.addEventListener( 'mousemove', that.onMouseMove.bind(that), false );
+                that.controls.addEventListener( 'mousedown', that.onMouseDown.bind(that), false );
                 // window.addEventListener( 'mouseup', that.onMouseUp.bind(that), false );
                 that.controls.addEventListener( 'dragging-changed', that.onTransformControlDragChanged.bind(that) );
 
                 // Zoom to Mouse position
                 that.orbit.enableZoom = false;
-
+                
+                // Get element for render area so we can bind events to that rather than the window
+                var renderEl = $('#com-chilipeppr-widget-3dview-robot-renderArea');
                 // so that left/right keyboard keys wake up the animation
-                $('body').on('keydown', that.wakeAnimate.bind(that));
+                // $('body').on('keydown', that.wakeAnimate.bind(that));
+                renderEl.on('keydown', that.wakeAnimate.bind(that));
 
-                $('body').on('mousewheel', function (e){
+                // $('body').on('mousewheel', function (e){
+                renderEl.on('mousewheel', function (e){
 
+                    console.log("got on mousewheel. e:", e);
                     that.wakeAnimate();
 
                     var factor = 20;
